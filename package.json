@@ -1,0 +1,25 @@
+{
+  "name": "my-cli",
+  "version": "1.0.0",
+  "description": "0719",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "webpack": "webpack --config ./build/webpack.config.js",
+    "parcel": "",
+    "rollup": "",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeungKaMing/my-cli.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LeungKaMing/my-cli/issues"
+  },
+  "homepage": "https://github.com/LeungKaMing/my-cli#readme"
+}

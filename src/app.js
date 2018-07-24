@@ -9,11 +9,11 @@ const server = http.createServer((req, res) => {
             case 'demo':
                 // 读取文件
                 let result = ''
-                const readable = fs.createReadStream('./template/index.html')
-                readable.on('data', (chunk) => {
+                const readStream = fs.createReadStream('../template/index.html')
+                readStream.on('data', (chunk) => {
                     result += chunk
                 });
-                readable.on('end', () => {
+                readStream.on('end', () => {
                     res.end(result)
                 });
                 break
@@ -29,13 +29,42 @@ const server = http.createServer((req, res) => {
                 })
                 break
             case 'webpack':
-                exec('npm start', (error, stdout, stderr) => {
+                // webpack
+                exec('npm run webpack', (error, stdout, stderr) => {
                     if (error) {
                         console.error(`exec error: ${error}`);
                         return;
                     }
                     console.log(`stdout: ${stdout}`);
                     console.log(`stderr: ${stderr}`);
+                    res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); 
+                    res.end('Hello World!')
+                })
+                break
+            case 'parcel':
+                // parcel
+                exec('npm run parcel', (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        return;
+                    }
+                    console.log(`stdout: ${stdout}`);
+                    console.log(`stderr: ${stderr}`);
+                    res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); 
+                    res.end('Hello World!')
+                })
+                break
+            case 'rollup':
+                // rollup
+                exec('npm run rollup', (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        return;
+                    }
+                    console.log(`stdout: ${stdout}`);
+                    console.log(`stderr: ${stderr}`);
+                    res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); 
+                    res.end('Hello World!')
                 })
                 break
             default:
