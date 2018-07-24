@@ -28,10 +28,13 @@ const server = http.createServer((req, res) => {
                     console.log(`stderr: ${stderr}`);
                 })
                 break
-            case 'vue':
-                exec('webpack', (error, stdout, stderr) => {
-                    console.log(`stdout: ${error}`);
-                    console.log(`stderr: ${stdout}`);
+            case 'webpack':
+                exec('npm start', (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        return;
+                    }
+                    console.log(`stdout: ${stdout}`);
                     console.log(`stderr: ${stderr}`);
                 })
                 break
