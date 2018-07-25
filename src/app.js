@@ -38,7 +38,7 @@ const server = http.createServer((req, res) => {
                     console.log(`stdout: ${stdout}`);
                     console.log(`stderr: ${stderr}`);
                     res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); 
-                    res.end('Hello World!')
+                    res.end('Hello Webpack!')
                 })
                 break
             case 'parcel':
