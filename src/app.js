@@ -9,7 +9,7 @@ const server = http.createServer((req, res) => {
             case 'demo':
                 // 读取文件
                 let result = ''
-                const readStream = fs.createReadStream('../template/index.html')
+                const readStream = fs.createReadStream('./template/index.html')
                 readStream.on('data', (chunk) => {
                     result += chunk
                 });
@@ -37,8 +37,15 @@ const server = http.createServer((req, res) => {
                     }
                     console.log(`stdout: ${stdout}`);
                     console.log(`stderr: ${stderr}`);
-                    res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); 
-                    res.end('Hello Webpack!')
+                    // ?
+                    let result = ''
+                    const readStream = fs.createReadStream('./template/index.html')
+                    readStream.on('data', (chunk) => {
+                        result += chunk
+                    });
+                    readStream.on('end', () => {
+                        res.end(result)
+                    });
                 })
                 break
             case 'parcel':
