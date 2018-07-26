@@ -54,11 +54,12 @@ const server = http.createServer((req, res) => {
                             res.writeHeader(200, {'Content-Type':'text/html;charset=UTF-8'})
                             res.end(result)
                         });
-                    } 
+                    }
                     else if (req.url === '/bundle.js') {
                         res.writeHead(200,{'Content-Type':'application/javascript'})
                         fs.createReadStream(path.join(__dirname, '../dist/bundle.js')).pipe(res)
                     } else {
+                        // 静态资源
                         let extname = path.extname(req.url).substring(1)
                         switch (extname) {
                             case 'jpg':
