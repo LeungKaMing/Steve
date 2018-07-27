@@ -62,7 +62,7 @@ const server = http.createServer((req, res) => {
                         res.writeHead(200,{'Content-Type':'application/javascript'})
                         fs.createReadStream(path.join(__dirname, './template/iconfont.js')).pipe(res)
                     } else if (req.url === '/favicon.ico') {
-                        res.end('')
+                        res.end('favicon.ico')
                     } else {
                         // 静态资源
                         let extname = path.extname(req.url).substring(1)
