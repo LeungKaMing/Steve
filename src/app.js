@@ -58,14 +58,21 @@ const server = http.createServer((req, res) => {
                     else if (req.url === '/bundle.js') {
                         res.writeHead(200,{'Content-Type':'application/javascript'})
                         fs.createReadStream(path.join(__dirname, '../dist/bundle.js')).pipe(res)
+                    } else if (req.url === '/iconfont.js') {
+                        res.writeHead(200,{'Content-Type':'application/javascript'})
+                        fs.createReadStream(path.join(__dirname, './template/iconfont.js')).pipe(res)
+                    } else if (req.url === '/favicon.ico') {
+                        res.end('')
                     } else {
                         // 静态资源
                         let extname = path.extname(req.url).substring(1)
                         switch (extname) {
-                            case 'jpg':
-                                res.writeHead(200,{'Content-Type':'image/jpeg'})
-                                fs.createReadStream(path.join(__dirname, `../dist${req.url}`)).pipe(res)
+                            case 'css':
+                                res.writeHead(200,{'Content-Type':'text/css'})
+                                fs.createReadStream(path.join(__dirname, `../src/assets/style/index.css`)).pipe(res)
                                 break
+                            default:
+                                fs.createReadStream(path.join(__dirname, `../dist${req.url}`)).pipe(res)
                         }
                     }
                 })
