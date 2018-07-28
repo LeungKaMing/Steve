@@ -5,7 +5,7 @@ module.exports = {
   entry: path.resolve(__dirname, '../src/entry/index.js'),
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, '../dist')
+    path: path.resolve(__dirname, '../dist/assets/')
   },
   module: {
     rules: [
@@ -32,7 +32,12 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: '引入HtmlWebpackPlugin'
+      title: '引入HtmlWebpackPlugin',
+      template: path.resolve(__dirname, '../src/template/index.html'),
+      filename: path.resolve(__dirname, '../dist/index.html'),
+      inject: true,
+      minify: true,
+      showErrors: true
     })
   ]
 };

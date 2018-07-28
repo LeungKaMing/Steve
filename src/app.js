@@ -36,17 +36,18 @@ const server = http.createServer((req, res) => {
                 break
             case 'webpack':
                 // webpack
+                console.log('exm?')
                 exec('npm run webpack', (error, stdout, stderr) => {
                     if (error) {
                         console.error(`exec error: ${error}`);
                         return;
                     }
                     console.log('>>>>>>webpack开始构建<<<<<<<')
-                    console.log(`stdout: ${stdout}`);
-                    console.log(`stderr: ${stderr}`);
+                    // console.log(`stdout: ${stdout}`);
+                    // console.log(`stderr: ${stderr}`);
                     if (req.url === '/') {
                         let result = ''
-                        const readStream = fs.createReadStream('./template/index.html')
+                        const readStream = fs.createReadStream('../dist/index.html')
                         readStream.on('data', (chunk) => {
                             result += chunk
                         });
@@ -55,12 +56,9 @@ const server = http.createServer((req, res) => {
                             res.end(result)
                         });
                     }
-                    else if (req.url === '/bundle.js') {
+                    else if (req.url === '/assets/bundle.js') {
                         res.writeHead(200,{'Content-Type':'application/javascript'})
-                        fs.createReadStream(path.join(__dirname, '../dist/bundle.js')).pipe(res)
-                    } else if (req.url === '/iconfont.js') {
-                        res.writeHead(200,{'Content-Type':'application/javascript'})
-                        fs.createReadStream(path.join(__dirname, './template/iconfont.js')).pipe(res)
+                        fs.createReadStream(path.join(__dirname, '../dist/assets/bundle.js')).pipe(res)
                     } else if (req.url === '/favicon.ico') {
                         res.end('favicon.ico')
                     } else {
@@ -72,7 +70,9 @@ const server = http.createServer((req, res) => {
                                 fs.createReadStream(path.join(__dirname, `../src/assets/style/index.css`)).pipe(res)
                                 break
                             default:
-                                fs.createReadStream(path.join(__dirname, `../dist${req.url}`)).pipe(res)
+                                console.log(extname, '<<<<')
+                                console.log('check me: ', req.url)
+                                fs.createReadStream(path.join(__dirname, `../dist/assets${req.url}`)).pipe(res)
                         }
                     }
                 })
