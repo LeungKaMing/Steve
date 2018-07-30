@@ -47,10 +47,11 @@ function handleArgv (req) {
                                 reject('webpack bundle fail')
                                 return;
                             }
-                            console.log('>>>>>>webpack开始构建<<<<<<<')
+                            console.log('>>>>>>webpack构建完成<<<<<<<')
                             // console.log(`stdout: ${stdout}`);
                             // console.log(`stderr: ${stderr}`);
                             webpackBundleResult = true  // 打包完成标识
+                            resolve('webpack bundle done')
                         })
                     } else {
                         resolve('webpack bundle done')
@@ -93,7 +94,6 @@ const server = http.createServer(async (req, res) => {
     const msg = await handleArgv(req)
     switch (msg) {
         case 'webpack bundle done':
-            console.log(msg, req.url)
             // webpack成功构建
             if (req.url === '/') {
                 let result = ''
@@ -109,18 +109,20 @@ const server = http.createServer(async (req, res) => {
                 res.end('favicon.ico')
             } else {
                 // 除js外的静态资源
+                let assestsResult = ''
                 let extname = path.extname(req.url).substring(1)
                 switch (extname) {
                     case 'css':
                         res.writeHead(200,{'Content-Type':'text/css'})
-                        fs.createReadStream(path.join(__dirname, `../src/assets/style/index.css`)).pipe(res)
+                        assestsResult = `../src/assets/style/index.css`
                         break
                     case 'js':
-                        fs.createReadStream(path.join(__dirname, `../dist/${req.url}`)).pipe(res)
+                        assestsResult = `../dist/${req.url}`
                         break
                     default:
-                        fs.createReadStream(path.join(__dirname, `../dist/assets${req.url}`)).pipe(res)
+                        assestsResult = `../dist/assets${req.url}`
                 }
+                fs.createReadStream(path.join(__dirname, assestsResult)).pipe(res)
             }
             break
         default:
