@@ -1,10 +1,14 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ManifestPlugin = require('webpack-manifest-plugin');
 
 module.exports = {
-  entry: path.resolve(__dirname, '../src/entry/index.js'),
+  entry: {
+    app: path.resolve(__dirname, '../src/entry/index.js'),
+    log: path.resolve(__dirname, '../src/entry/log.js')
+  },
   output: {
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
     path: path.resolve(__dirname, '../dist/assets/')
   },
   module: {
@@ -31,8 +35,9 @@ module.exports = {
     ]
   },
   plugins: [
+    new ManifestPlugin(),
     new HtmlWebpackPlugin({
-      title: '引入HtmlWebpackPlugin',
+      title: '引入HtmlWebpackPlugin', // 默认模版为html，HtmlWebpackPlugin会自动将其转为lodash格式，这些自定义变量均可通过lodash模版的变量书写规则进行注入。
       template: path.resolve(__dirname, '../src/template/index.html'),
       filename: path.resolve(__dirname, '../dist/index.html'),
       inject: true,

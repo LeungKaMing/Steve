@@ -3,110 +3,131 @@ const path = require('path')
 const {exec} = require('child_process')
 const fs = require('fs')
 
+// 已经实现了类似webpack的插件clean-webpack-plugin功能
 const rm = require('./pkg/rm')
+
+let webpackBundleResult = false
 
 // 服务 启动/重启 都会执行【删除dist目录】
 rm('../dist', '../dist')
 
-const server = http.createServer((req, res) => {
-    process.argv.slice(2).forEach((arg) => {
-        arg = arg.replace(/-/g, '')
-        switch (arg) {
-            case 'demo':
-                // 读取文件
+function handleArgv (req) {
+    return new Promise((resolve, reject) => {
+        process.argv.slice(2).forEach((arg) => {
+            arg = arg.replace(/-/g, '')
+            switch (arg) {
+                case 'demo':
+                    // 读取文件
+                    let result = ''
+                    const readStream = fs.createReadStream(path.join(__dirname, './template/index.html'))
+                    readStream.on('data', (chunk) => {
+                        result += chunk
+                    });
+                    readStream.on('end', () => {
+                        res.end(result)
+                    });
+                    break
+                case 'cp':
+                    // 子进程
+                    exec('node ./demo.js', (error, stdout, stderr) => {
+                        if (error) {
+                            console.error(`exec error: ${error}`);
+                            return;
+                        }
+                        console.log(`stdout: ${stdout}`);
+                        console.log(`stderr: ${stderr}`);
+                    })
+                    break
+                case 'webpack':
+                    // webpack
+                    if (!webpackBundleResult) {
+                        exec('npm run webpack', (error, stdout, stderr) => {
+                            if (error) {
+                                console.error(`exec error: ${error}`);
+                                reject('webpack bundle fail')
+                                return;
+                            }
+                            console.log('>>>>>>webpack开始构建<<<<<<<')
+                            // console.log(`stdout: ${stdout}`);
+                            // console.log(`stderr: ${stderr}`);
+                            webpackBundleResult = true  // 打包完成标识
+                        })
+                    } else {
+                        resolve('webpack bundle done')
+                    }
+                    break
+                case 'parcel':
+                    // parcel
+                    exec('npm run parcel', (error, stdout, stderr) => {
+                        if (error) {
+                            console.error(`exec error: ${error}`);
+                            return;
+                        }
+                        console.log(`stdout: ${stdout}`);
+                        console.log(`stderr: ${stderr}`);
+                        res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); 
+                        res.end('Hello World!')
+                    })
+                    break
+                case 'rollup':
+                    // rollup
+                    exec('npm run rollup', (error, stdout, stderr) => {
+                        if (error) {
+                            console.error(`exec error: ${error}`);
+                            return;
+                        }
+                        console.log(`stdout: ${stdout}`);
+                        console.log(`stderr: ${stderr}`);
+                        res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); 
+                        res.end('Hello World!')
+                    })
+                    break
+                default:
+                    res.end('Hello World!')
+            }
+        })
+    })
+}
+
+const server = http.createServer(async (req, res) => {
+    const msg = await handleArgv(req)
+    switch (msg) {
+        case 'webpack bundle done':
+            console.log(msg, req.url)
+            // webpack成功构建
+            if (req.url === '/') {
                 let result = ''
-                const readStream = fs.createReadStream(path.join(__dirname, './template/index.html'))
+                const readStream = fs.createReadStream('../dist/index.html')
                 readStream.on('data', (chunk) => {
                     result += chunk
                 });
                 readStream.on('end', () => {
+                    res.writeHeader(200, {'Content-Type':'text/html;charset=UTF-8'})
                     res.end(result)
                 });
-                break
-            case 'cp':
-                // 子进程
-                exec('node ./demo.js', (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`exec error: ${error}`);
-                        return;
-                    }
-                    console.log(`stdout: ${stdout}`);
-                    console.log(`stderr: ${stderr}`);
-                })
-                break
-            case 'webpack':
-                // webpack
-                console.log('exm?')
-                exec('npm run webpack', (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`exec error: ${error}`);
-                        return;
-                    }
-                    console.log('>>>>>>webpack开始构建<<<<<<<')
-                    // console.log(`stdout: ${stdout}`);
-                    // console.log(`stderr: ${stderr}`);
-                    if (req.url === '/') {
-                        let result = ''
-                        const readStream = fs.createReadStream('../dist/index.html')
-                        readStream.on('data', (chunk) => {
-                            result += chunk
-                        });
-                        readStream.on('end', () => {
-                            res.writeHeader(200, {'Content-Type':'text/html;charset=UTF-8'})
-                            res.end(result)
-                        });
-                    }
-                    else if (req.url === '/assets/bundle.js') {
-                        res.writeHead(200,{'Content-Type':'application/javascript'})
-                        fs.createReadStream(path.join(__dirname, '../dist/assets/bundle.js')).pipe(res)
-                    } else if (req.url === '/favicon.ico') {
-                        res.end('favicon.ico')
-                    } else {
-                        // 静态资源
-                        let extname = path.extname(req.url).substring(1)
-                        switch (extname) {
-                            case 'css':
-                                res.writeHead(200,{'Content-Type':'text/css'})
-                                fs.createReadStream(path.join(__dirname, `../src/assets/style/index.css`)).pipe(res)
-                                break
-                            default:
-                                console.log(extname, '<<<<')
-                                console.log('check me: ', req.url)
-                                fs.createReadStream(path.join(__dirname, `../dist/assets${req.url}`)).pipe(res)
-                        }
-                    }
-                })
-                break
-            case 'parcel':
-                // parcel
-                exec('npm run parcel', (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`exec error: ${error}`);
-                        return;
-                    }
-                    console.log(`stdout: ${stdout}`);
-                    console.log(`stderr: ${stderr}`);
-                    res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); 
-                    res.end('Hello World!')
-                })
-                break
-            case 'rollup':
-                // rollup
-                exec('npm run rollup', (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`exec error: ${error}`);
-                        return;
-                    }
-                    console.log(`stdout: ${stdout}`);
-                    console.log(`stderr: ${stderr}`);
-                    res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'}); 
-                    res.end('Hello World!')
-                })
-                break
-            default:
-                res.end('Hello World!')
-        }
-    })
+            } else if (req.url === '/favicon.ico') {
+                res.end('favicon.ico')
+            } else {
+                // 除js外的静态资源
+                let extname = path.extname(req.url).substring(1)
+                switch (extname) {
+                    case 'css':
+                        res.writeHead(200,{'Content-Type':'text/css'})
+                        fs.createReadStream(path.join(__dirname, `../src/assets/style/index.css`)).pipe(res)
+                        break
+                    case 'js':
+                        fs.createReadStream(path.join(__dirname, `../dist/${req.url}`)).pipe(res)
+                        break
+                    default:
+                        fs.createReadStream(path.join(__dirname, `../dist/assets${req.url}`)).pipe(res)
+                }
+            }
+            break
+        default:
+            fs.end('bundle fail no matter what bundle tool u r using.')
+            break
+    }
+   
 })
 
 server.listen(8080, () => {
