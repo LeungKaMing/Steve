@@ -113,14 +113,34 @@ const server = http.createServer(async (req, res) => {
                 let extname = path.extname(req.url).substring(1)
                 switch (extname) {
                     case 'css':
-                        res.writeHead(200,{'Content-Type':'text/css'})
-                        assestsResult = `../src/assets/style/index.css`
+                        res.writeHeader(200, {'Content-Type':'text/css;charset=UTF-8'})
+                        assestsResult = `../src${req.url}`
                         break
-                    case 'js':
-                        assestsResult = `../dist/${req.url}`
+                    case 'jpg':
+                        assestsResult = `../dist/assets${req.url}`
+                        break
+                    case 'woff':
+                        // 还没把css文件打包出来导致
+                        let matchFile = /\w+\.woff/g
+                        let path = ''
+                        const list = fs.readdirSync('../dist/assets/')
+                        const requestFile = req.url.replace('/', '')
+                        // 遍历dist目录下的文件，将匹配woff后缀的文件找出来，跟请求url带woff的做对比：命中则用两者任其一；不命中则用dist目录下皮带woff后缀的文件
+                        list.map((item) => {
+                            if (matchFile.test(item)) {
+                                // dist目录下的woff后缀文件 跟 请求url不相等，以前者为准
+                                if(item !== requestFile) {
+                                    path = `/${item}`
+                                } else {
+                                    path = `/${requestFile}`
+                                } 
+                            }
+                        })
+                        assestsResult = `../dist/assets${path}`
                         break
                     default:
-                        assestsResult = `../dist/assets${req.url}`
+                        // req.url = req.url.replace(/\/style/, '')
+                        assestsResult = `../dist${req.url}`
                 }
                 fs.createReadStream(path.join(__dirname, assestsResult)).pipe(res)
             }

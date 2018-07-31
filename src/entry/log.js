@@ -1,5 +1,5 @@
-export function log () {
-    console.log('just a log.')
+export function log (text) {
+    console.log(text)
 }
 
 export function simpleMath (num) {
