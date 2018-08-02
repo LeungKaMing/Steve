@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const merge = require('webpack-merge');
 
 const baseConfig = require('./webpack.base.config')
@@ -12,5 +13,12 @@ module.exports = merge(baseConfig, {
     hot: true,
     port: 9090
   },
-  mode: 'development'
+  mode: 'development',
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin(),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('development')
+    })
+  ]
 })

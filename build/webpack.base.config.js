@@ -1,7 +1,6 @@
 const path = require('path');
-const webpack = require('webpack');
-const ManifestPlugin = require('webpack-manifest-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
     entry: {
@@ -36,17 +35,14 @@ module.exports = {
       ]
     },
     plugins: [
-      new ManifestPlugin(),
-      new webpack.NamedModulesPlugin(),
-      new webpack.HotModuleReplacementPlugin(),
-      new HtmlWebpackPlugin({
-        title: '引入HtmlWebpackPlugin', // 默认模版为html，HtmlWebpackPlugin会自动将其转为lodash格式，这些自定义变量均可通过lodash模版的变量书写规则进行注入。
-        template: path.resolve(__dirname, '../src/template/index.html'),
-        filename: path.resolve(__dirname, '../dist/index.html'),
-        inject: true,
-        // minify: true,  // 有mode后就不需要了
-        showErrors: true
-      })
+        new HtmlWebpackPlugin({
+            title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)', // 默认模版为html，HtmlWebpackPlugin会自动将其转为lodash格式，这些自定义变量均可通过lodash模版的变量书写规则进行注入。
+            template: path.resolve(__dirname, '../src/template/index.html'),
+            filename: path.resolve(__dirname, '../dist/index.html'),
+            inject: true,
+            // minify: true,  // 有mode后就不需要了
+            showErrors: true
+        })
     ]
   };
   
