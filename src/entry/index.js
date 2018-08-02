@@ -3,6 +3,7 @@ import Icon from '../assets/images/luffy.jpg'
 import { log } from './log'
 
 let imgElement = new Image()
+imgElement.style.width = '100%'
 imgElement.src = Icon
 
 let divElement = document.createElement('div')

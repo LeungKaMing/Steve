@@ -11,43 +11,26 @@ let webpackBundleResult = false
 // 服务 启动/重启 都会执行【删除dist目录】
 rm('../dist', '../dist')
 
+/**
+ * @func handleArgv
+ * @param {*} req - nodejs的请求参数
+ * @desc 仅针对开发环境，根据打包出来的文件来启一个服务，让用户在浏览器可以实时看到对代码的改动 => 1. 有用nodejs + nodemon启服务的(通过命令行) 2. 有用webpack内置的webpack-dev-server插件启服务的(通过脚本)
+ */
 function handleArgv (req) {
     return new Promise((resolve, reject) => {
         process.argv.slice(2).forEach((arg) => {
             arg = arg.replace(/-/g, '')
             switch (arg) {
-                case 'demo':
-                    // 读取文件
-                    let result = ''
-                    const readStream = fs.createReadStream(path.join(__dirname, './template/index.html'))
-                    readStream.on('data', (chunk) => {
-                        result += chunk
-                    });
-                    readStream.on('end', () => {
-                        res.end(result)
-                    });
-                    break
-                case 'cp':
-                    // 子进程
-                    exec('node ./demo.js', (error, stdout, stderr) => {
-                        if (error) {
-                            console.error(`exec error: ${error}`);
-                            return;
-                        }
-                        console.log(`stdout: ${stdout}`);
-                        console.log(`stderr: ${stderr}`);
-                    })
-                    break
-                case 'webpack':
+                case 'webpack:dev':
                     // webpack
                     if (!webpackBundleResult) {
-                        exec('npm run webpack', (error, stdout, stderr) => {
+                        exec('npm run webpack:dev', (error, stdout, stderr) => {
                             if (error) {
                                 console.error(`exec error: ${error}`);
                                 reject('webpack bundle fail')
                                 return;
                             }
-                            console.log('>>>>>>webpack构建完成<<<<<<<')
+                            console.log('>>>>>>webpack开发环境构建完成<<<<<<<')
                             // console.log(`stdout: ${stdout}`);
                             // console.log(`stderr: ${stderr}`);
                             webpackBundleResult = true  // 打包完成标识
@@ -117,7 +100,7 @@ const server = http.createServer(async (req, res) => {
                         assestsResult = `../src${req.url}`
                         break
                     case 'jpg':
-                        assestsResult = `../dist/assets${req.url}`
+                        assestsResult = `../dist/${req.url}`
                         break
                     case 'woff':
                         // 还没把css文件打包出来导致
