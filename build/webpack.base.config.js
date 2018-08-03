@@ -1,6 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-// const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
     entry: {
@@ -14,11 +14,11 @@ module.exports = {
     module: {
       rules: [
         {
-          test: /\.css$/,
-          use: [
-            'style-loader',
-            'css-loader'
-          ]
+					test: /\.css$/,
+					use: ExtractTextPlugin.extract({
+						fallback: "style-loader",
+						use: "css-loader"
+					})
         },
         {
           test: /\.(png|svg|jpg|gif)$/,
@@ -35,6 +35,7 @@ module.exports = {
       ]
     },
     plugins: [
+				new ExtractTextPlugin('[name].bundle.css'),
         new HtmlWebpackPlugin({
             title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)', // 默认模版为html，HtmlWebpackPlugin会自动将其转为lodash格式，这些自定义变量均可通过lodash模版的变量书写规则进行注入。
             template: path.resolve(__dirname, '../src/template/index.html'),

@@ -96,15 +96,15 @@ const server = http.createServer(async (req, res) => {
                 let extname = path.extname(req.url).substring(1)
                 switch (extname) {
                     case 'css':
-                        res.writeHeader(200, {'Content-Type':'text/css;charset=UTF-8'})
-                        assestsResult = `../src${req.url}`
-                        break
-                    case 'jpg':
-                        assestsResult = `../dist/${req.url}`
-                        break
                     case 'woff':
-                        // 还没把css文件打包出来导致
-                        let matchFile = /\w+\.woff/g
+                        let matchFile
+                        if (extname === 'css') {
+                            res.writeHeader(200, {'Content-Type':'text/css;charset=UTF-8'})
+                            matchFile = /\w+\.css/g
+                        } 
+                        if (extname === 'woff') {
+                            matchFile = /\w+\.woff/g
+                        }
                         let path = ''
                         const list = fs.readdirSync('../dist/assets/')
                         const requestFile = req.url.replace('/', '')
@@ -116,13 +116,12 @@ const server = http.createServer(async (req, res) => {
                                     path = `/${item}`
                                 } else {
                                     path = `/${requestFile}`
-                                } 
+                                }
                             }
                         })
                         assestsResult = `../dist/assets${path}`
                         break
                     default:
-                        // req.url = req.url.replace(/\/style/, '')
                         assestsResult = `../dist${req.url}`
                 }
                 fs.createReadStream(path.join(__dirname, assestsResult)).pipe(res)

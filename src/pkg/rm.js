@@ -14,7 +14,6 @@ let firstDirPath
  */
 function rm (dir, temp, cb) {
     !!temp ? firstDirPath = dir : ''
-    console.log('0726: ', dir, fs.existsSync(dir))
     if (fs.existsSync(dir)) {
         // 读取传入目录下的每个文件
         const fileList = fs.readdirSync(dir)
