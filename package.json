@@ -4,6 +4,7 @@
   "description": "0719",
   "main": "index.js",
   "dependencies": {
+    "cnpm": "^6.0.0",
     "css-loader": "^1.0.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^1.1.11",

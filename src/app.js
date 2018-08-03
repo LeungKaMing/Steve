@@ -24,7 +24,7 @@ function handleArgv (req) {
                 case 'webpack:dev':
                     // webpack
                     if (!webpackBundleResult) {
-                        exec('npm run webpack:dev', (error, stdout, stderr) => {
+                        exec('cd ../ && npm run webpack:dev', (error, stdout, stderr) => {
                             if (error) {
                                 console.error(`exec error: ${error}`);
                                 reject('webpack bundle fail')
@@ -42,7 +42,7 @@ function handleArgv (req) {
                     break
                 case 'parcel':
                     // parcel
-                    exec('npm run parcel', (error, stdout, stderr) => {
+                    exec('cd ../ && npm run parcel', (error, stdout, stderr) => {
                         if (error) {
                             console.error(`exec error: ${error}`);
                             return;
@@ -55,7 +55,7 @@ function handleArgv (req) {
                     break
                 case 'rollup':
                     // rollup
-                    exec('npm run rollup', (error, stdout, stderr) => {
+                    exec('cd ../ && npm run rollup', (error, stdout, stderr) => {
                         if (error) {
                             console.error(`exec error: ${error}`);
                             return;

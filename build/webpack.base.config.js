@@ -34,6 +34,36 @@ module.exports = {
         }
       ]
     },
+    optimization: {
+      splitChunks: {
+        chunks: "all", // 必须三选一： "initial" | "all"(推荐) | "async" (默认就是async)
+        minSize: 30000, // 最小尺寸，30000
+        minChunks: 1, // 最小 chunk ，默认1
+        maxAsyncRequests: 5, // 最大异步请求数， 默认5
+        maxInitialRequests : 3, // 最大初始化请求书，默认3
+        automaticNameDelimiter: '~',// 打包分隔符
+        name: function(){}, // 打包后的名称，此选项可接收 function
+        cacheGroups:{ // 这里开始设置缓存的 chunks
+          // 公共块抽离
+          common: {
+            minChunks: 2, // 引用最少2次被引用或以上都要抽离
+            priority: 20,  // 优先级最高
+            reuseExistingChunk: true, // 可设置是否重用该chunk
+            enforce: true
+          },
+          // 第三方依赖抽离 => 引用一次或以上都要抽离
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: 10,
+            reuseExistingChunk: true, // 可设置是否重用该chunk
+            enforce: true
+          }
+        }
+      },
+      runtimeChunk: {
+        name: 'runtime',
+      }
+    },
     plugins: [
 				new ExtractTextPlugin('[name].bundle.css'),
         new HtmlWebpackPlugin({
