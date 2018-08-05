@@ -51,9 +51,14 @@ module.exports = {
             reuseExistingChunk: true, // 可设置是否重用该chunk
             enforce: true
           },
-          // 第三方依赖抽离 => 引用一次或以上都要抽离
+          // 第三方依赖抽离
+          /**
+           * 这里的正则包含着匹配node_module这个目录下的所有第三方依赖，其中包括loader。举个例，如果上面chunks设置的值还是all，js文件需要通过css-loader来处理'import ./a.css'这段代码的，必定是异步的。这就极有可能导致webpack完成了分块，但是导入css这段代码还在通过css-loader异步处理中，那么就会出现剩余代码都在等待，代码也没加载下去的情况了。
+           * 所以上面chunks的默认值 在官方文档是async
+           */
           vendors: {
-            test: /[\\/]node_modules[\\/]/,
+            test: /[\\/]node_modules[\\/]/, 
+            // minChunks: 2,
             priority: 10,
             reuseExistingChunk: true, // 可设置是否重用该chunk
             enforce: true
