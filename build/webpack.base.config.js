@@ -9,7 +9,8 @@ module.exports = {
     output: {
       filename: '[name].bundle.js',
       path: path.resolve(__dirname, '../dist/assets/'),
-      publicPath: '/assets/'
+      publicPath: '/assets/',
+      chunkFilename: '[name].bundle.js'
     },
     module: {
       rules: [
@@ -53,15 +54,12 @@ module.exports = {
           // 第三方依赖抽离 - 既抽离入口模块，又抽离异步引入的模块
           vendors: {
             chunks: 'all',
-            test: /[\\/]node_modules[\\/]/, 
+            test: /[\\/]node_modules[\\/]\.js/, 
             priority: 10,
             reuseExistingChunk: true, // 可设置是否重用该chunk
             enforce: true
           }
         }
-      },
-      runtimeChunk: {
-        name: 'runtime',
       }
     },
     plugins: [

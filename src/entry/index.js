@@ -11,3 +11,8 @@ divElement.innerHTML = 'Hello, webpack!'
 
 document.getElementById('app').appendChild(imgElement)
 document.getElementById('app').appendChild(divElement)
+
+// 尝试webpack动态加载写法 - import()
+import('../components/demo').then(res=>{
+    console.log(res, '<<<<')
+})
