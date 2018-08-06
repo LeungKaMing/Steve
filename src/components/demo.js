@@ -1,3 +1,3 @@
 export default {
-    demo: 'text'
+    demo: 'hello, I came from demo.'
 }
