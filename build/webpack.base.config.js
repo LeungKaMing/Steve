@@ -36,29 +36,24 @@ module.exports = {
     },
     optimization: {
       splitChunks: {
-        chunks: "all", // 必须三选一： "initial" | "all"(推荐) | "async" (默认就是async)
-        minSize: 30000, // 最小尺寸，30000
-        minChunks: 1, // 最小 chunk ，默认1
-        maxAsyncRequests: 5, // 最大异步请求数， 默认5
-        maxInitialRequests : 3, // 最大初始化请求书，默认3
-        automaticNameDelimiter: '~',// 打包分隔符
-        name: function(){}, // 打包后的名称，此选项可接收 function
+        chunks: "all", // 必须三选一： "initial" | "all"(推荐) | "async" (默认就是async)；默认为async，表示只会提取异步加载模块的公共代码，initial表示只会提取初始入口模块的公共代码，all表示同时提取前两者的代码 => 见延伸阅读.md
+        minSize: 30000, //模块大于30k会被抽离到公共模块
+        minChunks: 1, //模块出现1次就会被抽离到公共模块
+        maxAsyncRequests: 5, //异步模块，一次最多只能被加载5个
+        maxInitialRequests: 3, //入口模块最多只能加载3个
         cacheGroups:{ // 这里开始设置缓存的 chunks
-          // 公共块抽离
+          // 公共块抽离 - 只抽离入口模块
           common: {
+            chunks: 'initial',
             minChunks: 2, // 引用最少2次被引用或以上都要抽离
             priority: 20,  // 优先级最高
             reuseExistingChunk: true, // 可设置是否重用该chunk
             enforce: true
           },
-          // 第三方依赖抽离
-          /**
-           * 这里的正则包含着匹配node_module这个目录下的所有第三方依赖，其中包括loader。举个例，如果上面chunks设置的值还是all，js文件需要通过css-loader来处理'import ./a.css'这段代码的，必定是异步的。这就极有可能导致webpack完成了分块，但是导入css这段代码还在通过css-loader异步处理中，那么就会出现剩余代码都在等待，代码也没加载下去的情况了。
-           * 所以上面chunks的默认值 在官方文档是async
-           */
+          // 第三方依赖抽离 - 既抽离入口模块，又抽离异步引入的模块
           vendors: {
+            chunks: 'all',
             test: /[\\/]node_modules[\\/]/, 
-            // minChunks: 2,
             priority: 10,
             reuseExistingChunk: true, // 可设置是否重用该chunk
             enforce: true
