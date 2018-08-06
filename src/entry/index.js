@@ -1,5 +1,7 @@
 import '../assets/style/index.css'
 import Icon from '../assets/images/luffy.jpg'
+// import _ from 'lodash'
+window._.each([1, 2, 3, 4, 5], (item) => console.log(item, '<<<<'))
 
 let imgElement = new Image()
 imgElement.style.width = '100%'

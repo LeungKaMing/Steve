@@ -1,16 +1,17 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const webpack = require('webpack')
 
 module.exports = {
     entry: {
       app: path.resolve(__dirname, '../src/entry/index.js')
     },
     output: {
-      filename: '[name].bundle.js',
+      filename: '[name].[hash].js',
       path: path.resolve(__dirname, '../dist/assets/'),
       publicPath: '/assets/',
-      chunkFilename: '[name].bundle.js'
+      chunkFilename: '[name].[hash].js'
     },
     module: {
       rules: [
@@ -54,16 +55,19 @@ module.exports = {
           // 第三方依赖抽离 - 既抽离入口模块，又抽离异步引入的模块
           vendors: {
             chunks: 'all',
-            test: /[\\/]node_modules[\\/]\.js/, 
+            minChunks: 1, // 引用最少2次被引用或以上都要抽离
+            test: /[\\/]node_modules[\\/]/, 
             priority: 10,
-            reuseExistingChunk: true, // 可设置是否重用该chunk
             enforce: true
           }
         }
       }
     },
     plugins: [
-				new ExtractTextPlugin('[name].bundle.css'),
+        new webpack.ProvidePlugin({
+          'window._': 'lodash'
+        }), // 让全局能直接访问lodash实例
+				new ExtractTextPlugin('[name].[hash].css'),
         new HtmlWebpackPlugin({
             title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)', // 默认模版为html，HtmlWebpackPlugin会自动将其转为lodash格式，这些自定义变量均可通过lodash模版的变量书写规则进行注入。
             template: path.resolve(__dirname, '../src/template/index.html'),
