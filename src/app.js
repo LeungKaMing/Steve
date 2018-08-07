@@ -97,9 +97,10 @@ const server = http.createServer(async (req, res) => {
                 switch (extname) {
                     case 'css':
                     case 'woff':
+                        let flag = false    // 由于splitChunk会连css也进行抽离【带vendors~app开头的】，所以只选dist目录下的由ExtractTextPlugin抽离的为准
                         let matchFile
                         if (extname === 'css') {
-                            res.writeHeader(200, {'Content-Type':'text/css;charset=UTF-8'})
+                            res.writeHeader(200, {'Content-Type':'text/css;charset=UTF-8', 'ass-hole': 'fuck u'})
                             matchFile = /\w+\.css/g
                         } 
                         if (extname === 'woff') {
@@ -110,12 +111,14 @@ const server = http.createServer(async (req, res) => {
                         const requestFile = req.url.replace('/', '')
                         // 遍历dist目录下的文件，将匹配woff后缀的文件找出来，跟请求url带woff的做对比：命中则用两者任其一；不命中则用dist目录下皮带woff后缀的文件
                         list.map((item) => {
-                            if (matchFile.test(item)) {
+                            if (matchFile.test(item) && !flag) {
                                 // dist目录下的woff后缀文件 跟 请求url不相等，以前者为准
                                 if(item !== requestFile) {
                                     path = `/${item}`
+                                    flag = true
                                 } else {
                                     path = `/${requestFile}`
+                                    flag = true
                                 }
                             }
                         })

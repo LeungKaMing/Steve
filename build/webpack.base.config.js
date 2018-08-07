@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const ModuleConcatenationPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
 const webpack = require('webpack')
 
 module.exports = {
@@ -54,7 +55,6 @@ module.exports = {
           },
           // 第三方依赖抽离 - 既抽离入口模块，又抽离异步引入的模块
           vendors: {
-            chunks: 'all',
             minChunks: 1, // 引用最少2次被引用或以上都要抽离
             test: /[\\/]node_modules[\\/]/, 
             priority: 10,
@@ -63,10 +63,15 @@ module.exports = {
         }
       }
     },
+    // externals: {
+    //   // 从cdn引入的就可以避免打包进js文件里了，这样就可以减少包的体积
+    //   '_': 'lodash'
+    // },
     plugins: [
+        new ModuleConcatenationPlugin(),
         new webpack.ProvidePlugin({
-          'window._': 'lodash'
-        }), // 让全局能直接访问lodash实例
+          'window.l': 'lodash'
+        }), // 让全局能直接访问lodash实例【跟分块并没关系！只是给全局提供更简便的方式！】
 				new ExtractTextPlugin('[name].[hash].css'),
         new HtmlWebpackPlugin({
             title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)', // 默认模版为html，HtmlWebpackPlugin会自动将其转为lodash格式，这些自定义变量均可通过lodash模版的变量书写规则进行注入。
