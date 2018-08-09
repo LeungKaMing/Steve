@@ -6,34 +6,9 @@ const webpack = require('webpack')
 
 module.exports = {
     entry: {app: path.resolve(__dirname, '../src/entry/index.js')},
-    output: {
-      filename: '[name].[hash].js',
-      path: path.resolve(__dirname, '../dist/assets/'),
-      publicPath: '/assets/',
-      chunkFilename: '[name].[hash].js'
-    },
+    output: {filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'},
     module: {
-      rules: [
-        {
-					test: /\.css$/,
-					use: ExtractTextPlugin.extract({
-						fallback: "style-loader",
-						use: "css-loader"
-					})
-        },
-        {
-          test: /\.(png|svg|jpg|gif)$/,
-          use: [
-            'file-loader'
-          ]
-        },
-        {
-          test: /\.(woff|woff2|eot|ttf|otf)$/,
-          use: [
-            'file-loader'
-          ]
-        }
-      ]
+      rules: [{test: /.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: 'css-loader'})},{test: /.(png|svg|jpg|gif)$/,use: ['file-loader']},{test: /.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}]
     },
     optimization: {
       splitChunks: {
@@ -71,14 +46,7 @@ module.exports = {
           'window.l': 'lodash'
         }), // 让全局能直接访问lodash实例【跟分块并没关系！只是给全局提供更简便的方式！】
 				new ExtractTextPlugin('[name].[hash].css'),
-        new HtmlWebpackPlugin({
-            title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)', // 默认模版为html，HtmlWebpackPlugin会自动将其转为lodash格式，这些自定义变量均可通过lodash模版的变量书写规则进行注入。
-            template: path.resolve(__dirname, '../src/template/index.html'),
-            filename: path.resolve(__dirname, '../dist/index.html'),
-            inject: true,
-            // minify: true,  // 有mode后就不需要了
-            showErrors: true
-        })
+        new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'),inject: true,minify: true,showErrors: true})
     ]
   };
-  
+// 8/9/2018, 11:19:24 PM, written by Leung.

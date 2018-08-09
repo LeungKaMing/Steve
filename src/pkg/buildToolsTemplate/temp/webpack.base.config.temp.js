@@ -5,7 +5,9 @@ const ModuleConcatenationPlugin = require('webpack/lib/optimize/ModuleConcatenat
 const webpack = require('webpack')
 
 module.exports = {
-    entry: {{entryParams}},
+    entry: {
+      app: path.resolve(__dirname, '../src/entry/index.js')
+    },
     output: {
       filename: '[name].[hash].js',
       path: path.resolve(__dirname, '../dist/assets/'),
