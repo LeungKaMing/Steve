@@ -70,13 +70,12 @@ objReadline.on('close', ()=>{
  * use: 用于判断上一级目录是否存在，并做相关操作
  * @param {*} pathWay 当前目录
  * @param {*} lastTimePathWay 上一次的目录
- * @param {*} firstTimePathWay 最初传入的目录
  */
-function checkBaseDir (pathWay, tempLastPath) {
+function checkBaseDir (pathWay, lastTimePathWay) {
 	if (fs.existsSync(rootDir)) {
 		console.log('终于创建完了!最开始的dir：', rootDir)
 	}	else if (fs.existsSync(pathWay)) {
-		fs.mkdirSync(tempLastPath)	// 创建上一次临时存起的目录，这个目录是当前目录的子目录
+		fs.mkdirSync(lastTimePathWay)	// 创建上一次临时存起的目录，这个目录是当前目录的子目录
 		checkBaseDir(rootDir)	// 翻check最初的目录
 	} else if (!fs.existsSync(pathWay)) {
 		// 当前目录不存在，则把该目录的上一级目录继续递归
