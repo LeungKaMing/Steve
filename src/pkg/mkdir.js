@@ -1,7 +1,9 @@
 const fs = require('fs')
 const path = require('path')
 const readline = require('readline');
-let os = require('os');
+const os = require('os');
+
+const rm = require('./rm')
 
 /**
  * use: 从指定配置模版进行注入，创建配置文件
@@ -9,8 +11,8 @@ let os = require('os');
  * how:
  * params:
  */
-let fReadName = path.resolve(__dirname, './buildToolsTemplate/webpack.template.txt');
-let rootDir = path.resolve(__dirname, '../../project/demo/temp/a/b/c/d/e/f')
+let webpackBaseTemplate = path.resolve(__dirname, './buildToolsTemplate/webpack.template.txt');
+let rootDir = path.resolve(__dirname, '../../project/vue/')
 
 function injectConfig (fReadName, fWriteName) {
 	let fRead = fs.createReadStream(fReadName);
@@ -55,9 +57,9 @@ function injectConfig (fReadName, fWriteName) {
 			temp = line
 		}
 		fWrite.write(temp + os.EOL); // 下一行
-});
+	});
 
-objReadline.on('close', ()=>{
+	objReadline.on('close', ()=>{
 		console.log('readline close...');
 		// 判断是否生成了模板 => 是则把build/webpack.base.config.js替换掉
 		if (fs.existsSync(fWriteName)) {
@@ -72,11 +74,10 @@ objReadline.on('close', ()=>{
  * @param {*} lastTimePathWay 上一次的目录
  */
 function checkBaseDir (pathWay, lastTimePathWay) {
-	if (fs.existsSync(rootDir)) {
-		console.log('终于创建完了!最开始的dir：', rootDir)
-	}	else if (fs.existsSync(pathWay)) {
-		fs.mkdirSync(lastTimePathWay)	// 创建上一次临时存起的目录，这个目录是当前目录的子目录
-		checkBaseDir(rootDir)	// 翻check最初的目录
+	if (fs.existsSync(pathWay)) {
+		// 创建上一次临时存起的目录，这个目录是当前目录的子目录
+		// 翻check最初的目录
+		fs.mkdirSync(lastTimePathWay)
 	} else if (!fs.existsSync(pathWay)) {
 		// 当前目录不存在，则把该目录的上一级目录继续递归
 		checkBaseDir(path.dirname(pathWay), pathWay)
@@ -91,36 +92,43 @@ function checkBaseDir (pathWay, lastTimePathWay) {
  */
 function mkfile (rootDir) {
 	if (fs.existsSync(rootDir)) {
-		console.log('有就不会创建啦，傻的咩')
+		// console.log('有就不会创建啦，傻的咩')
 		// 存在则走正常逻辑
 		process.argv.slice(2).forEach((arg) => {
-				arg = arg.replace(/-/g, '')
-				switch (arg) {
-						case 'p':
-						case 'project':
-								// 判断传入的参数是文件还是目录
-								let fileStat = fs.statSync(rootDir)
-								if (fileStat.isDirectory()) {
-										// 文件状态判断为目录
-										const fileList = fs.readdirSync(rootDir)
-										// console.log(`>>>>>demo/目录下有什么文件呢？期望为空：${fileList.length}`)
-										// 往demo/ 目录下创建文件 => 来个build/ 目录先吧 笑
-										const subDir = path.resolve(__dirname, `${rootDir}/build`)
-										if (fs.existsSync(subDir)) {
-												console.log(`已经存在 ${subDir}`)
-										} else {
-												fs.mkdirSync(subDir)
-												console.log(`创建 ${subDir} 成功，现在要往里写入配置文件`)
-												injectConfig(fReadName, path.resolve(__dirname, `${subDir}/targetWebpack.js`))
-										}
-								} else {
-										// 文件状态判断为文件
-										console.log('>>>>>这是文件啊')
-								}
-								break
+			arg = arg.replace(/-/g, '')
+			switch (arg) {
+		case 'p':
+		case 'project':
+				// 判断传入的参数是文件还是目录
+				let fileStat = fs.statSync(rootDir)
+				if (fileStat.isDirectory()) {
+					// 文件状态判断为目录
+					const fileList = fs.readdirSync(rootDir)
+					// console.log(`>>>>>demo/目录下有什么文件呢？期望为空：${fileList.length}`)
+					const readyToDir = [path.resolve(__dirname, `${rootDir}/build`), path.resolve(__dirname, `${rootDir}/src`), path.resolve(__dirname, `${rootDir}/src/assets`), path.resolve(__dirname, `${rootDir}/src/assets/style`), path.resolve(__dirname, `${rootDir}/src/assets/images`), path.resolve(__dirname, `${rootDir}/src/assets/scripts`), path.resolve(__dirname, `${rootDir}/src/assets/template`), path.resolve(__dirname, `${rootDir}/src/components`), path.resolve(__dirname, `${rootDir}/src/entry`), path.resolve(__dirname, `${rootDir}/src/store`), path.resolve(__dirname, `${rootDir}/src/router`), path.resolve(__dirname, `${rootDir}/src/config`)]
+
+					readyToDir.forEach((itemDir) => {
+						if (!fs.existsSync(itemDir)) {
+							checkBaseDir(path.dirname(itemDir), itemDir)	// 检查并最终创建目录后，递归
+							if (itemDir === path.resolve(__dirname, `${rootDir}/build`)) {
+								injectConfig(webpackBaseTemplate, path.resolve(__dirname, `${itemDir}/webpack.base.config.js`))
+							}
+						} else {
+								console.log(`已经存在 ${itemDir}`)
+						}						
+					})
+				} else {
+						// 文件状态判断为文件
+						console.log('>>>>>这是文件啊')
 				}
+				break
+			case 'd':
+				rm('../../project', '../../project')
+				break
+			}
 		})
 	} else {
+		console.log(1)
 		checkBaseDir(path.dirname(rootDir), rootDir)	// 检查并最终创建目录后，递归
 		mkfile(rootDir)
 	}

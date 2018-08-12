@@ -49,4 +49,4 @@ module.exports = {
         new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'),inject: true,minify: true,showErrors: true})
     ]
   };
-// 2018-8-10 16:36:18, written by Leung.
+// 8/13/2018, 2:07:41 AM, written by Leung.

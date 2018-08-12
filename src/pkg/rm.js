@@ -12,7 +12,7 @@ let firstDirPath
  * 1. readdirSync通过这个命令读取的【有可能除了文件，还有目录】
  * 2. 文件则进行删除；目录则递归
  */
-function rm (dir, temp, cb) {
+function rm (dir, temp) {
     !!temp ? firstDirPath = dir : ''
     if (fs.existsSync(dir)) {
         // 读取传入目录下的每个文件
