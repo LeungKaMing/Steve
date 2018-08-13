@@ -71,16 +71,24 @@ function injectConfig (fReadName, fWriteName) {
 /**
  * use: 用于判断上一级目录是否存在，并做相关操作
  * @param {*} pathWay 当前目录
- * @param {*} lastTimePathWay 上一次的目录
+ * @param {*} firstTimePath 第一次传入的目录
+ * @desc dir = /a/b/c/d，有可能a,b,c,d都不存在，如果按理走回调，最多创建到a，b,c,c都创建不了 => 特别是应用在遍历这种异步环境
  */
-function checkBaseDir (pathWay, lastTimePathWay) {
-	if (fs.existsSync(pathWay)) {
-		// 创建上一次临时存起的目录，这个目录是当前目录的子目录
-		// 翻check最初的目录
-		fs.mkdirSync(lastTimePathWay)
-	} else if (!fs.existsSync(pathWay)) {
-		// 当前目录不存在，则把该目录的上一级目录继续递归
-		checkBaseDir(path.dirname(pathWay), pathWay)
+function checkBaseDir (pathWay, firstTimePath) {
+	const lastPath = path.dirname(pathWay)
+	if (!fs.existsSync(lastPath)) {
+		// console.log(`1: ${lastPath}不存在上级目录，继续回调，传入${lastPath}, ${firstTimePath}`)
+		checkBaseDir(lastPath, firstTimePath)
+	}	else {
+		// console.log(`2.1 ${lastPath}存在上级目录，创建${pathWay}, ${lastPath}, ${firstTimePath}`)
+		fs.mkdirSync(pathWay)
+		// console.log(`2.2: 判断最初传入的${firstTimePath}是否存在`)
+		if (!fs.existsSync(firstTimePath)) {
+		// console.log(`2.3: 不存在，继续回调，${firstTimePath}，${firstTimePath}传入`)
+		checkBaseDir(firstTimePath, firstTimePath)
+		} else {
+			console.log(`存在，end of story.`)
+		}
 	}
 }
 
@@ -109,7 +117,7 @@ function mkfile (rootDir) {
 
 					readyToDir.forEach((itemDir) => {
 						if (!fs.existsSync(itemDir)) {
-							checkBaseDir(path.dirname(itemDir), itemDir)	// 检查并最终创建目录后，递归
+							checkBaseDir(itemDir, itemDir)	// 检查并最终创建目录后，递归
 							if (itemDir === path.resolve(__dirname, `${rootDir}/build`)) {
 								injectConfig(webpackBaseTemplate, path.resolve(__dirname, `${itemDir}/webpack.base.config.js`))
 							}
