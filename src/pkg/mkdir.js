@@ -72,7 +72,7 @@ function injectConfig (fReadName, fWriteName) {
  * use: 用于判断上一级目录是否存在，并做相关操作
  * @param {*} pathWay 当前目录
  * @param {*} firstTimePath 第一次传入的目录
- * @desc dir = /a/b/c/d，有可能a,b,c,d都不存在，如果按理走回调，最多创建到a，b,c,c都创建不了 => 特别是应用在遍历这种异步环境
+ * @desc dir = /a/b/c/d，有可能a,b,c,d都不存在，如果按理走回调，最多创建到a，b,c,c都创建不了 => 特别是应用在遍历这种异步环境 【重构于0813】
  */
 function checkBaseDir (pathWay, firstTimePath) {
 	const lastPath = path.dirname(pathWay)
@@ -81,7 +81,7 @@ function checkBaseDir (pathWay, firstTimePath) {
 		checkBaseDir(lastPath, firstTimePath)
 	}	else {
 		// console.log(`2.1 ${lastPath}存在上级目录，创建${pathWay}, ${lastPath}, ${firstTimePath}`)
-		fs.mkdirSync(pathWay)
+		!fs.existsSync(pathWay) && fs.mkdirSync(pathWay)
 		// console.log(`2.2: 判断最初传入的${firstTimePath}是否存在`)
 		if (!fs.existsSync(firstTimePath)) {
 		// console.log(`2.3: 不存在，继续回调，${firstTimePath}，${firstTimePath}传入`)
@@ -105,38 +105,37 @@ function mkfile (rootDir) {
 		process.argv.slice(2).forEach((arg) => {
 			arg = arg.replace(/-/g, '')
 			switch (arg) {
-		case 'p':
-		case 'project':
-				// 判断传入的参数是文件还是目录
-				let fileStat = fs.statSync(rootDir)
-				if (fileStat.isDirectory()) {
-					// 文件状态判断为目录
-					const fileList = fs.readdirSync(rootDir)
-					// console.log(`>>>>>demo/目录下有什么文件呢？期望为空：${fileList.length}`)
-					const readyToDir = [path.resolve(__dirname, `${rootDir}/build`), path.resolve(__dirname, `${rootDir}/src`), path.resolve(__dirname, `${rootDir}/src/assets`), path.resolve(__dirname, `${rootDir}/src/assets/style`), path.resolve(__dirname, `${rootDir}/src/assets/images`), path.resolve(__dirname, `${rootDir}/src/assets/scripts`), path.resolve(__dirname, `${rootDir}/src/assets/template`), path.resolve(__dirname, `${rootDir}/src/components`), path.resolve(__dirname, `${rootDir}/src/entry`), path.resolve(__dirname, `${rootDir}/src/store`), path.resolve(__dirname, `${rootDir}/src/router`), path.resolve(__dirname, `${rootDir}/src/config`)]
+				case 'p':
+				case 'project':
+					// 判断传入的参数是文件还是目录
+					let fileStat = fs.statSync(rootDir)
+					if (fileStat.isDirectory()) {
+						// 文件状态判断为目录
+						const fileList = fs.readdirSync(rootDir)
+						// console.log(`>>>>>demo/目录下有什么文件呢？期望为空：${fileList.length}`)
+						const readyToDir = [path.resolve(__dirname, `${rootDir}/build`), path.resolve(__dirname, `${rootDir}/src`), path.resolve(__dirname, `${rootDir}/src/assets`), path.resolve(__dirname, `${rootDir}/src/assets/style`), path.resolve(__dirname, `${rootDir}/src/assets/images`), path.resolve(__dirname, `${rootDir}/src/assets/scripts`), path.resolve(__dirname, `${rootDir}/src/assets/template`), path.resolve(__dirname, `${rootDir}/src/components`), path.resolve(__dirname, `${rootDir}/src/entry`), path.resolve(__dirname, `${rootDir}/src/store`), path.resolve(__dirname, `${rootDir}/src/router`), path.resolve(__dirname, `${rootDir}/src/config`)]
 
-					readyToDir.forEach((itemDir) => {
-						if (!fs.existsSync(itemDir)) {
-							checkBaseDir(itemDir, itemDir)	// 检查并最终创建目录后，递归
-							if (itemDir === path.resolve(__dirname, `${rootDir}/build`)) {
-								injectConfig(webpackBaseTemplate, path.resolve(__dirname, `${itemDir}/webpack.base.config.js`))
-							}
-						} else {
-								console.log(`已经存在 ${itemDir}`)
-						}						
-					})
-				} else {
-						// 文件状态判断为文件
-						console.log('>>>>>这是文件啊')
+						readyToDir.forEach((itemDir) => {
+							if (!fs.existsSync(itemDir)) {
+								checkBaseDir(itemDir, itemDir)	// 检查并最终创建目录后，递归
+								if (itemDir === path.resolve(__dirname, `${rootDir}/build`)) {
+									injectConfig(webpackBaseTemplate, path.resolve(__dirname, `${itemDir}/webpack.base.config.js`))
+								}
+							} else {
+									console.log(`已经存在 ${itemDir}`)
+							}						
+						})
+					} else {
+							// 文件状态判断为文件
+							console.log('>>>>>这是文件啊')
+					}
+					break
+				case 'd':
+					rm('../../project', '../../project')
+					break
 				}
-				break
-			case 'd':
-				rm('../../project', '../../project')
-				break
-			}
 		})
 	} else {
-		console.log(1)
 		checkBaseDir(path.dirname(rootDir), rootDir)	// 检查并最终创建目录后，递归
 		mkfile(rootDir)
 	}

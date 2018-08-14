@@ -25,15 +25,15 @@ function rm (dir, temp) {
                 }
                 console.log(`删除目录${dir}成功`)
                 // 每次删除完目录后都应该要来检查一下【第一次传入的目录】是否为非空？
-                console.log(`删除完当前目录的目录后，检查第一次传入的目录：${fs.existsSync(firstDirPath)}, ${firstDirPath}`)
+                // console.log(`删除完当前目录的目录后，检查第一次传入的目录：${fs.existsSync(firstDirPath)}, ${firstDirPath}`)
+                
                 if (fs.existsSync(firstDirPath)) {
                     let subFileList = fs.readdirSync(firstDirPath)
-                    if (!subFileList.length) {
-                        // 如果【当前目录】为空，那么将【当前目录】丢进去再次递归，把【当前目录】删除
+                    // 注意：0814 这里的subFileList非空时为包含了【其他目录】的数组；当这个数组为空时，一定要把【最初目录firstDirPath】传入去，把最初目录也删掉！
+                    if (subFileList) {
+                        // 内部递归就不用传入第二个参数，第二个参数是由【调用当前模块的 模块】来传入，用于保存【最初目录firstDirPath】
                         rm(path.join(`${firstDirPath}`))
                     }
-                } else {
-                    console.log('第一次传入的目录也已经删除，good work!')
                 }
             })
         } else {
@@ -50,24 +50,18 @@ function rm (dir, temp) {
                         if (err) {
                             console.log(`删除文件出错：${err}`)
                         }
-                        console.log(`删除文件${file}成功`)
-                        // 每次删除完文件后是不是应该要来检查一下当前传入的目录是否为非空？
-                        console.log(`删除完当前目录的文件后，检查当前目录：${fs.existsSync(dir)}, ${dir}`)
+                        // 每次删除完某个目录下的文件后，都应该要再来检查一下当前目录是否已经没有文件了
                         if (fs.existsSync(dir)) {
                             let subFileList = fs.readdirSync(dir)
                             if (!subFileList.length) {
                                 // 如果【当前目录】为空，那么将【当前目录】丢进去再次递归，把【当前目录】删除
                                 rm(path.join(`${dir}`))
                             }
-                        } else {
-                            console.log('第一次传入的目录也已经删除，good work!')
                         }
                     })
                 }
             })
         }
-    } else {
-        console.log('传入的目录参数已经不再存在！')
     }
 }
 
