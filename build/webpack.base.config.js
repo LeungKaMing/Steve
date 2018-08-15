@@ -8,7 +8,7 @@ const webpack = require('webpack')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
-    entry: {index: path.resolve(__dirname, '../src/entry/index.js'), vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js')},
+    entry: {app: path.resolve(__dirname, '../src/entry/index.js'), vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js')},
     output: {filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'},
     module: {
       rules: [{test: /.js$/,loader: 'babel-loader'}, {test: /.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: 'css-loader'})}, {test: /.(png|svg|jpg|gif)$/,use: ['file-loader']}, {test: /.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}, {test: /.vue$/,loader: 'vue-loader'}]
@@ -32,6 +32,7 @@ module.exports = {
             minChunks: 2, // 引用最少2次被引用或以上都要抽离
             priority: 20,  // 优先级最高
             reuseExistingChunk: true, // 可设置是否重用该chunk
+            name: 'common',
             enforce: true
           },
           // 第三方依赖抽离 - 既抽离入口模块，又抽离异步引入的模块
@@ -39,6 +40,7 @@ module.exports = {
             minChunks: 1, // 引用最少2次被引用或以上都要抽离
             test: /[\\/]node_modules[\\/]/, 
             priority: 10,
+            name: 'vendors',
             enforce: true
           }
         }
@@ -55,7 +57,7 @@ module.exports = {
           'window.l': 'lodash'
         }), // 让全局能直接访问lodash实例【跟分块并没关系！只是给全局提供更简便的方式！】
 				new ExtractTextPlugin('[name].[hash].css'),
-        new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'),inject: true,minify: true,showErrors: true}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'),inject: true,minify: true,showErrors: true})
+        new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'), minify: true,showErrors: true,  chunks: ['common', 'vendors', 'app']}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']})
     ]
   };
-// 8/16/2018, 12:34:40 AM, written by Leung.
+// 8/16/2018, 1:54:27 AM, written by Leung.
