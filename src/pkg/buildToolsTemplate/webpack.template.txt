@@ -4,11 +4,19 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const ModuleConcatenationPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
 const webpack = require('webpack')
 
+// vue-loader
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
+
 module.exports = {
     entry: {{entryParams}},
     output: {{outputParams}},
     module: {
       rules: {{ruleParams}}
+    },
+    resolve:{
+      alias:{
+        'vue$':'vue/dist/vue.js'
+      }
     },
     optimization: {
       splitChunks: {
@@ -41,12 +49,13 @@ module.exports = {
     //   '_': 'lodash'
     // },
     plugins: [
+        new VueLoaderPlugin(),  // vue-loader
         new ModuleConcatenationPlugin(),
         new webpack.ProvidePlugin({
           'window.l': 'lodash'
         }), // 让全局能直接访问lodash实例【跟分块并没关系！只是给全局提供更简便的方式！】
 				new ExtractTextPlugin('[name].[hash].css'),
-        new HtmlWebpackPlugin({{templateParams}})
+        {{templateListParams}}
     ]
   };
 // {{author}}

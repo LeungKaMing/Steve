@@ -4,11 +4,19 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const ModuleConcatenationPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
 const webpack = require('webpack')
 
+// vue-loader
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
+
 module.exports = {
-    entry: {app: path.resolve(__dirname, '../src/entry/index.js')},
+    entry: {index: path.resolve(__dirname, '../src/entry/index.js'), vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js')},
     output: {filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'},
     module: {
-      rules: [{test: /.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: 'css-loader'})},{test: /.(png|svg|jpg|gif)$/,use: ['file-loader']},{test: /.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}]
+      rules: [{test: /.js$/,loader: 'babel-loader'}, {test: /.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: 'css-loader'})}, {test: /.(png|svg|jpg|gif)$/,use: ['file-loader']}, {test: /.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}, {test: /.vue$/,loader: 'vue-loader'}]
+    },
+    resolve:{
+      alias:{
+        'vue$':'vue/dist/vue.js'
+      }
     },
     optimization: {
       splitChunks: {
@@ -41,12 +49,13 @@ module.exports = {
     //   '_': 'lodash'
     // },
     plugins: [
+        new VueLoaderPlugin(),  // vue-loader
         new ModuleConcatenationPlugin(),
         new webpack.ProvidePlugin({
           'window.l': 'lodash'
         }), // 让全局能直接访问lodash实例【跟分块并没关系！只是给全局提供更简便的方式！】
 				new ExtractTextPlugin('[name].[hash].css'),
-        new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'),inject: true,minify: true,showErrors: true})
+        new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'),inject: true,minify: true,showErrors: true}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'),inject: true,minify: true,showErrors: true})
     ]
   };
-// 8/14/2018, 9:16:31 PM, written by Leung.
+// 8/16/2018, 12:34:40 AM, written by Leung.

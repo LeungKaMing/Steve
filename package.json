@@ -5,11 +5,11 @@
   "main": "index.js",
   "dependencies": {
     "autoprefixer": "^9.1.0",
+    "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "cnpm": "^6.0.0",
     "css-loader": "^1.0.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^1.1.11",
@@ -27,7 +27,9 @@
     "webpack-merge": "^4.1.4"
   },
   "devDependencies": {
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.10",
+    "vue": "^2.5.17",
+    "vue-loader": "^15.3.0"
   },
   "scripts": {
     "start": "webpack --config ./build/webpack.dev.config.js && webpack-dev-server --config ./build/webpack.dev.config.js --open",
