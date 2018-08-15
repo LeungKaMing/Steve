@@ -47,7 +47,7 @@ function rm (dir, temp) {
                 } else {
                     // 文件状态判定为文件
                     fs.unlink(path.join(`${dir}/${file}`), (err) => {
-                        console.log('>>>>>排查偶发删除抛出异常错误 ', fs.existsSync(dir), err)
+                        console.log('>>>>>排查偶发删除抛出异常错误 ', dir, fs.existsSync(dir), err)
                         if (err) {
                             console.log(`删除文件出错：${err}`)
                         }

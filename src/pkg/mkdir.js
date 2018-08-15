@@ -28,25 +28,19 @@ function injectConfig (fReadName, fWriteName) {
 		const entryReg = /{{entryParams}}/
 		const outputReg = /{{outputParams}}/
 		const ruleReg = /{{ruleParams}}/
-
-
-		const templateDefaultReg = /{{templateDefaultParams}}/
-		const templateVueReg = /{{templateVueParams}}/
 		const templateListReg = /{{templateListParams}}/
-
 		const authorReg = /{{author}}/
 
 		// 默认配置规则
 		const rulesDefault = "[{test: /\.js$/,loader: 'babel-loader'}, {test: /\.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: 'css-loader'})}, {test: /\.(png|svg|jpg|gif)$/,use: ['file-loader']}, {test: /\.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
 
-		// // 默认模板插件参数
-		// const templateDefault = "{title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'),inject: true,minify: true,showErrors: true}"
-		// const templateVue = "{title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'),inject: true,minify: true,showErrors: true}"
-
-		// 先随便配点
+		// 默认模板插件参数
+		const templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'), minify: true,showErrors: true,  chunks: ['common', 'vendors', 'app']}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']})"
+		
+		// 替换模板
 		if (entryReg.test(line)) {
 			// 入口
-			temp = line.replace(entryReg, "{index: path.resolve(__dirname, '../src/entry/index.js'), vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js')}")
+			temp = line.replace(entryReg, "{app: path.resolve(__dirname, '../src/entry/index.js'), vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js')}")
 		} else if (outputReg.test(line)) {
 			// 出口
 			temp = line.replace(outputReg, "{filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'}")
@@ -54,7 +48,7 @@ function injectConfig (fReadName, fWriteName) {
 			// 规则
 			temp = line.replace(ruleReg, rulesDefault)
 		} else if (templateListReg.test(line)) {
-			temp = line.replace(templateListReg, "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'),inject: true,minify: true,showErrors: true}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'),inject: true,minify: true,showErrors: true})")
+			temp = line.replace(templateListReg, templateDefault)
 		} else if (authorReg.test(line)) {
 			// 模板插件配置
 			temp = line.replace(authorReg,  String(new Date().toLocaleString()) + ', written by Leung.')
