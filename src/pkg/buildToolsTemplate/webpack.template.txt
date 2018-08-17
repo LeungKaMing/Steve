@@ -3,7 +3,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const ModuleConcatenationPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
 const webpack = require('webpack')
-
 // vue-loader
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 

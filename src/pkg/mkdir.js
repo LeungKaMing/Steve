@@ -32,9 +32,10 @@ function injectConfig (fReadName, fWriteName) {
 		const authorReg = /{{author}}/
 
 		// 默认配置规则
-		const rulesDefault = "[{test: /\.js$/,loader: 'babel-loader'}, {test: /\.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: 'css-loader'})}, {test: /\.(png|svg|jpg|gif)$/,use: ['file-loader']}, {test: /\.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
+		const rulesDefault = "[{test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{			loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpg|gif)$/,use: ['file-loader']}, {test: /\.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
 
 		// 默认模板插件参数
+		// about postcss => Damn u, postcss2rem！This plugin is not suitable for me to handle postcss, and it cost me too many time to search on Internet just for a stupid thought which is to handle px to rem.
 		const templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'), minify: true,showErrors: true,  chunks: ['common', 'vendors', 'app']}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']})"
 		
 		// 替换模板

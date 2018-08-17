@@ -81,5 +81,8 @@ input {
   
 
 .hello {
+    display: flex;
     color: red;
+    width: 100px;
+    height: 100Px;
 }

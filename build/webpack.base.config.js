@@ -3,7 +3,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const ModuleConcatenationPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
 const webpack = require('webpack')
-
 // vue-loader
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
@@ -11,7 +10,7 @@ module.exports = {
     entry: {app: path.resolve(__dirname, '../src/entry/index.js'), vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js')},
     output: {filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'},
     module: {
-      rules: [{test: /.js$/,loader: 'babel-loader'}, {test: /.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: 'css-loader'})}, {test: /.(png|svg|jpg|gif)$/,use: ['file-loader']}, {test: /.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}, {test: /.vue$/,loader: 'vue-loader'}]
+      rules: [{test: /.js$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{			loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /.(png|svg|jpg|gif)$/,use: ['file-loader']}, {test: /.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}, {test: /.vue$/,loader: 'vue-loader'}]
     },
     resolve:{
       alias:{
@@ -60,4 +59,4 @@ module.exports = {
         new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'), minify: true,showErrors: true,  chunks: ['common', 'vendors', 'app']}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']})
     ]
   };
-// 8/16/2018, 1:54:27 AM, written by Leung.
+// 8/17/2018, 11:51:40 PM, written by Leung.
