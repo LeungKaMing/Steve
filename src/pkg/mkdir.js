@@ -32,7 +32,7 @@ function injectConfig (fReadName, fWriteName) {
 		const authorReg = /{{author}}/
 
 		// 默认配置规则
-		const rulesDefault = "[{test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{			loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpg|gif)$/,use: ['file-loader']}, {test: /\.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
+		const rulesDefault = "[{test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpg|gif)$/,use: ['file-loader']}, {test: /\.(woff|woff2|eot|ttf|otf)$/,use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
 
 		// 默认模板插件参数
 		// about postcss => Damn u, postcss2rem！This plugin is not suitable for me to handle postcss, and it cost me too many time to search on Internet just for a stupid thought which is to handle px to rem.

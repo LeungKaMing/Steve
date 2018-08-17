@@ -40,14 +40,13 @@ a {
 }
 html {
   height: 100%;
-  font-size: 10px;
   -webkit-text-size-adjust: 100%;
 }
 body {
   position: relative;
   height: 100%;
   color: #1B364B;
-  font-size: 1.4rem;
+  font-size: 14px;
   font-family: 'Roboto','Droid Sans','Helvetica Neue','Droid Sans Fallback','Heiti SC','sans-self';
   line-height: 1.6;
   background-color: #EFF1F4;
