@@ -1,6 +1,6 @@
 module.exports = {
   plugins: [
-    // require('autoprefixer'),
+    require('autoprefixer'),
     /**
      * 假设设计稿750宽:
      * rootValue为75，说是对根元素大小进行设置
@@ -9,7 +9,6 @@ module.exports = {
      * selectorBlackList则是一个对css选择器进行过滤的数组，比如你设置为['fs']，那例如fs-xl类名，里面有关px的样式将不被转换，这里也支持正则写法
      * minPixelValue是一个非常不错的选项，设置了12，意思是所有小于12px的样式都不被转换，那么border之类的属性自然会保留px值了
      */
-    
     require('postcss-pxtorem')({
       rootValue: 75,
       unitPrecision: 5,
@@ -18,6 +17,9 @@ module.exports = {
       replace: true,
       mediaQuery: false,
       minPixelValue: 6
+    }),
+    require('cssnano')({
+      preset: 'default',
     })
   ]
 }
