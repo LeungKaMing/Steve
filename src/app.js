@@ -98,6 +98,16 @@ const server = http.createServer(async (req, res) => {
                     res.writeHeader(200, {'Content-Type':'text/html;charset=UTF-8'})
                     res.end(result)
                 });
+            } else if (req.url === '/react.html') {
+                let result = ''
+                const readStream = fs.createReadStream('../dist/react.html')
+                readStream.on('data', (chunk) => {
+                    result += chunk
+                });
+                readStream.on('end', () => {
+                    res.writeHeader(200, {'Content-Type':'text/html;charset=UTF-8'})
+                    res.end(result)
+                });
             } else if (req.url === '/favicon.ico') {
                 res.end('favicon.ico')
             } else {

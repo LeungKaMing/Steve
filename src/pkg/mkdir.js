@@ -32,16 +32,16 @@ function injectConfig (fReadName, fWriteName) {
 		const authorReg = /{{author}}/
 
 		// 默认配置规则
-		const rulesDefault = "[{test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/, exclude: /node_modules/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpe?g|gif)$/, exclude: /node_modules/, use: [{loader: 'file-loader'}, {loader: 'image-webpack-loader', options: { mozjpeg: {progressive: true,quality: 100},optipng: {enabled: false,},pngquant: {quality: '65-90',speed: 4},gifsicle: {interlaced: false,},webp: {quality: 75}}}]}, {test: /\.(woff|woff2|eot|ttf|otf)$/, exclude: /node_modules/, use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
+		const rulesDefault = "[{test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/, exclude: /node_modules/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpe?g|gif)$/, exclude: /node_modules/, use: [{loader: 'file-loader'}, {loader: 'image-webpack-loader', options: { mozjpeg: {progressive: true,quality: 100},optipng: {enabled: false,},pngquant: {quality: '65-90',speed: 4},gifsicle: {interlaced: false,},webp: {quality: 75}}}]}, {test: /\.(woff|woff2|eot|ttf|otf)$/, exclude: /node_modules/, use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
 
 		// 默认模板插件参数
 		// about postcss => Damn u, postcss2rem！This plugin is not suitable for me to handle postcss, and it cost me too many time to search on Internet just for a stupid thought which is to handle px to rem.
-		const templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'), minify: true,showErrors: true,  chunks: ['common', 'vendors', 'app']}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']})"
+		const templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/index.html'),filename: path.resolve(__dirname, '../dist/index.html'), minify: true,showErrors: true,  chunks: ['common', 'vendors', 'app']}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']}), new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/react.html'),filename: path.resolve(__dirname, '../dist/react.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'reactEntry']})"
 		
 		// 替换模板
 		if (entryReg.test(line)) {
 			// 入口
-			temp = line.replace(entryReg, "{app: path.resolve(__dirname, '../src/entry/index.js'), vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js')}")
+			temp = line.replace(entryReg, "{app: path.resolve(__dirname, '../src/entry/index.js'), vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js'), reactEntry: path.resolve(__dirname, '../src/entry/reactEntry.js')}")
 		} else if (outputReg.test(line)) {
 			// 出口
 			temp = line.replace(outputReg, "{filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'}")
