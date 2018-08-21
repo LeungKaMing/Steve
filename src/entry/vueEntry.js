@@ -1,10 +1,92 @@
+import "babel-polyfill";
 import Vue from "vue";
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+const store = new Vuex.Store({
+  state: {
+    count: 0,
+    name: 'leung',
+    age: 26
+  },
+  mutations: {
+    increment (state) {
+      state.count++
+      state.age++
+    },
+    decrement (state) {
+      state.count--
+      state.age--
+    },
+    fullName (state) {
+      state.name = 'leungkaming'
+    },
+    shortName (state) {
+      state.name = 'leung'
+    }
+  }
+})
 
 new Vue({
   el: '#app',
+  store,
   data () {
     return {
       msg: 'Hello, Vue!'
+    }
+  },
+  /**
+   * Vuex给我们提供了辅助函数mapState，该函数做了一些简便操作返回一个对象，可以令我们少打几个字更快书写计算属性。
+   * 1. 一般情况下：
+   * computed: {
+   *  count () {
+   *    return this.$store.state.count
+   *  },
+   *  name () {
+   *    return this.$store.state.name
+   *  }
+   * },
+   * 
+   * 2. 当计算属性跟状态名相同时，还可以简写成：
+   * computed: Vuex.mapState(['count', 'name', 'age']),
+   * 
+   * 3. 由于该辅助函数返回一个对象，还可以用到ES6对象展开符：
+   * computed: {
+   *   ...Vuex.mapState({
+   *     count () {
+   *       return this.$store.state.count
+   *     },
+   *     name: 'name',
+   *     age: state => state.age
+   *   })
+   * },
+   * 
+   * 4. 下面用到的是普通高级写法：
+   */
+  computed: Vuex.mapState({
+    count () {
+      return this.$store.state.count
+    },
+    name: 'name',
+    age: state => state.age
+
+  }),
+  created () {
+    console.log('inited')
+  },
+  methods: {
+    add () {
+      store.commit('increment')
+    },
+    min () {
+      store.commit('decrement')
+    },
+    full () {
+      store.commit('fullName')
+    },
+    short () {
+      store.commit('shortName')
     }
   }
 })

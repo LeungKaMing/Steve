@@ -1,3 +1,4 @@
+import "babel-polyfill";
 import '../assets/style/index.css'
 import Icon from '../assets/images/luffy.jpg'
 import _ from 'lodash'
