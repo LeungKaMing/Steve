@@ -57,6 +57,12 @@ new Vue({
     },
     min () {
       store.commit('decrement')
+    },
+    addAge () {
+      store.commit('increment', 'age')
+    },
+    minAge () {
+      store.commit('decrement', 'age')
     }
   }
 })
