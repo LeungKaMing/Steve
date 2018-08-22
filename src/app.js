@@ -147,7 +147,10 @@ const server = http.createServer(async (req, res) => {
                     default:
                         assestsResult = `../dist${req.url}`
                 }
-                fs.createReadStream(path.join(__dirname, assestsResult)).pipe(res)
+                if (req.url !== '/__webpack_hmr') {
+                    // 排除热加载
+                    fs.createReadStream(path.join(__dirname, assestsResult)).pipe(res)
+                }
             }
             break
         default:

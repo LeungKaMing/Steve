@@ -1,32 +1,8 @@
 import "babel-polyfill";
 import Vue from "vue";
-import Vuex from 'vuex'
-
-Vue.use(Vuex)
-
-const store = new Vuex.Store({
-  state: {
-    count: 0,
-    name: 'leung',
-    age: 26
-  },
-  mutations: {
-    increment (state) {
-      state.count++
-      state.age++
-    },
-    decrement (state) {
-      state.count--
-      state.age--
-    },
-    fullName (state) {
-      state.name = 'leungkaming'
-    },
-    shortName (state) {
-      state.name = 'leung'
-    }
-  }
-})
+import { mapState } from 'vuex'
+import store from '../store/vuexStore'
+import IntroComp from '../components/vue/IntroComp.vue'
 
 new Vue({
   el: '#app',
@@ -35,6 +11,9 @@ new Vue({
     return {
       msg: 'Hello, Vue!'
     }
+  },
+  components: {
+    IntroComp
   },
   /**
    * Vuex给我们提供了辅助函数mapState，该函数做了一些简便操作返回一个对象，可以令我们少打几个字更快书写计算属性。
@@ -64,13 +43,10 @@ new Vue({
    * 
    * 4. 下面用到的是普通高级写法：
    */
-  computed: Vuex.mapState({
+  computed: mapState({
     count () {
       return this.$store.state.count
-    },
-    name: 'name',
-    age: state => state.age
-
+    }
   }),
   created () {
     console.log('inited')
@@ -81,12 +57,6 @@ new Vue({
     },
     min () {
       store.commit('decrement')
-    },
-    full () {
-      store.commit('fullName')
-    },
-    short () {
-      store.commit('shortName')
     }
   }
 })
