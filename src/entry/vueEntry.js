@@ -49,7 +49,6 @@ new Vue({
     }
   }),
   created () {
-    console.log('inited')
   },
   methods: {
     add () {
@@ -59,10 +58,10 @@ new Vue({
       store.commit('decrement')
     },
     addAge () {
-      store.commit('increment', 'age')
+      store.commit('increment', {type: 'increment', num: 1})
     },
     minAge () {
-      store.commit('decrement', 'age')
+      store.commit('decrement', {type: 'decrement', num: 1})
     }
   }
 })

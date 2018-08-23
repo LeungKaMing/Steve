@@ -1,5 +1,7 @@
 import Vue from "vue";
 import Vuex from 'vuex'
+import mutationTypes from './mutaion-types.js'
+
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -11,30 +13,30 @@ export default new Vuex.Store({
 		list2: ['python', 'javascript', 'php'],
 	},
 	mutations: {
-		increment (state, num) {
-			if (!!num) {
-				state.age++
+		[mutationTypes.INCREMENT] (state, payload) {
+			if (!!payload) {
+				state.age = state.age + payload.num
 			} else {
 				state.count++
 			}
 		},
-		decrement (state, num) {
-			if (!!num) {
-				state.age--
+		[mutationTypes.DECREMENT] (state, payload) {
+			if (!!payload) {
+				state.age = state.age - payload.num
 			} else {
 				state.count--
 			}
 		},
-		fullName (state) {
+		[mutationTypes.FULLNAME] (state) {
 			state.name = 'leungkaming'
 		},
-		shortName (state) {
+		[mutationTypes.SHORTNAME] (state) {
 			state.name = 'leung'
 		},
-		removeItem (state, index) {
+		[mutationTypes.REMOVEITEM] (state, index) {
 			state.list.splice(index, 1)
 		},
-		insertItem (state, index, item) {
+		[mutationTypes.INSERTITEM] (state, index, item) {
 			state.list.splice(index, 0, item)
 		}
 	},

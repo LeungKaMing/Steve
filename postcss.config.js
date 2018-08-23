@@ -1,5 +1,6 @@
 module.exports = {
   plugins: [
+    /** csshack 自动补充前缀 */
     require('autoprefixer'),
     /**
      * 假设设计稿750宽:
@@ -18,6 +19,7 @@ module.exports = {
       mediaQuery: false,
       minPixelValue: 6
     }),
+    /**css压缩 */
     require('cssnano')({
       preset: 'default',
     })
