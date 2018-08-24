@@ -4,6 +4,9 @@ const FULLNAME = 'fullName'
 const SHORTNAME = 'shortName'
 const REMOVEITEM = 'removeItem'
 const INSERTITEM = 'insertItem'
+const FAKEAJAX = 'fakeAjax'
+const DELAYTEXT = 'delayText'
+const PROMISETEXT = 'promiseText'
 
 export default {
   INCREMENT,
@@ -11,5 +14,8 @@ export default {
   FULLNAME,
   SHORTNAME,
   REMOVEITEM,
-  INSERTITEM
+  INSERTITEM,
+  FAKEAJAX,
+  DELAYTEXT,
+  PROMISETEXT
 }
