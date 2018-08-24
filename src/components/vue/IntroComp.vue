@@ -15,7 +15,7 @@
 </style>
 
 <script>
-    import { mapState, mapGetters } from 'vuex'
+    import { mapState, mapGetters, mapMutations } from 'vuex'
     
     export default {
         data () {
@@ -33,12 +33,13 @@
             ])
         }),
         methods: {
+            // mutation 都是同步事务
             full () {
                 this.$store.commit('fullName')
             },
-            short () {
-                this.$store.commit('shortName')
-            }
+            ...mapMutations({
+                short: 'shortName'
+            })
         }
     }
 </script>
