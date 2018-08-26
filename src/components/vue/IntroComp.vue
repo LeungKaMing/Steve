@@ -2,7 +2,7 @@
     <div>
         <p>written by {{ name }}.</p>
         <p>his {{ age }} years old till totay.</p>
-        <p>he got his first job in {{ get1stJob }}.</p>
+        <!-- <p>he got his first job in {{ get1stJob }}.</p> -->
         <p>his first language is {{ getLanguage }}.</p>
         <p>this text will show after 1s {{ delayText }}.</p>
         <p>did promise work out? {{ promiseText }}.</p>
@@ -26,13 +26,13 @@
             return {}
         },
         // 辅助函数mapState和mapGetters都会返回一个对象
-        computed: mapState({
+        computed: mapState('intro',{
             name: 'name',
             age: state => state.age,
             getLanguage () {
-                return this.$store.getters.getLanguage('javascript')
+                return this.$store.getters['intro/getLanguage']('javascript')
             },
-            ...mapGetters([
+            ...mapGetters('intro', [
                 'get1stJob'
             ]),
             delayText: 'delayText',
@@ -41,14 +41,14 @@
         methods: {
             // mutation 都是同步事务
             full () {
-                this.$store.commit('fullName')
+                this.$store.commit('intro/fullName')
             },
             // 等同于将方法this.short()指向this.$store.commit('shortName'), 只有重新映射参数才为对象；其他情况不映射的话这样写：...mapMutations(['shortName'])
             ...mapMutations({
-                short: 'shortName'
+                short: 'intro/shortName'
             }),
             ajax (msg) {
-                this.$store.dispatch('fakeAjax', {
+                this.$store.dispatch('intro/fakeAjax', {
                     msg
                 })
             },
@@ -57,9 +57,10 @@
              * Action 可以包含任意异步操作。
              */
             ...mapActions({
-                text: 'delayText'
+                text: 'intro/delayText'
             }),
-            ...mapActions(['combinePromise'])
+            ...mapActions('intro', ['combinePromise'])
+            
         }
     }
 </script>

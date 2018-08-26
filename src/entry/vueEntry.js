@@ -43,25 +43,23 @@ new Vue({
    * 
    * 4. 下面用到的是普通高级写法：
    */
-  computed: mapState({
-    count () {
-      return this.$store.state.count
-    }
-  }),
+  computed: mapState('intro', [
+    'count'
+  ]),
   created () {
   },
   methods: {
     add () {
-      store.commit('increment')
+      store.commit('intro/increment')
     },
     min () {
-      store.commit('decrement')
+      store.commit('intro/decrement')
     },
     addAge () {
-      store.commit('increment', {type: 'increment', num: 1})
+      store.commit('intro/increment', {type: 'increment', num: 1})
     },
     minAge () {
-      store.commit('decrement', {type: 'decrement', num: 1})
+      store.commit('intro/decrement', {type: 'decrement', num: 1})
     }
   }
 })
