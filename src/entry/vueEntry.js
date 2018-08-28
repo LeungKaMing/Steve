@@ -1,20 +1,55 @@
 import "babel-polyfill";
 import Vue from "vue";
+import VueRouter from 'vue-router'
 import { mapState } from 'vuex'
 import store from '../store/vuexStore'
 import IntroComp from '../components/vue/IntroComp.vue'
+import AgeComp from '../components/vue/AgeComp.vue'
+import AsyncComp from '../components/vue/AsyncComp.vue'
+
+Vue.use(VueRouter)
+
+const routes = [
+  {
+    path: '/'
+  },
+  {
+    path: '/intro',
+    component: IntroComp,
+    children: [
+      {
+        path: 'age',
+        component: AgeComp
+      },
+      {
+        path: 'async',
+        component: AsyncComp
+      }
+    ]
+  }
+]
+const router = new VueRouter({
+  routes
+})
 
 new Vue({
   el: '#app',
   store,
+  router,
   data () {
     return {
       msg: 'Hello, Vue!'
     }
   },
-  components: {
-    IntroComp
+  watch: {
+    '$route' (to, from) {
+      // 对路由变化作出响应...
+      console.log(to, from)
+    }
   },
+  // components: {
+  //   IntroComp
+  // },
   /**
    * Vuex给我们提供了辅助函数mapState，该函数做了一些简便操作返回一个对象，可以令我们少打几个字更快书写计算属性。
    * 1. 一般情况下：
@@ -54,12 +89,6 @@ new Vue({
     },
     min () {
       store.commit('intro/decrement')
-    },
-    addAge () {
-      store.commit('intro/increment', {type: 'increment', num: 1})
-    },
-    minAge () {
-      store.commit('intro/decrement', {type: 'decrement', num: 1})
     }
   }
 })
