@@ -6,6 +6,7 @@ import store from '../store/vuexStore'
 import IntroComp from '../components/vue/IntroComp.vue'
 import AgeComp from '../components/vue/AgeComp.vue'
 import AsyncComp from '../components/vue/AsyncComp.vue'
+import CodeComp from '../components/vue/CodeComp.vue'
 
 Vue.use(VueRouter)
 
@@ -24,6 +25,10 @@ const routes = [
       {
         path: 'async',
         component: AsyncComp
+      },
+      {
+        path: 'code',
+        component: CodeComp
       }
     ]
   }

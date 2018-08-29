@@ -3,8 +3,11 @@
         <p>written by {{ name }} and role is {{ getQuery }}.</p>
         <button @click="full">看看作者全名</button>
         <button @click="short">看看作者笔名</button>
-        <router-link to="/intro/age">Go to Age</router-link>
-        <router-link to="/intro/async">Go to Async</router-link>
+        <button @click="goTo">编程式导航/intro/code</button>
+        <div>
+            <router-link to="/intro/age">声明式导航/intro/age</router-link>
+            <router-link to="/intro/async">声明式导航/intro/async</router-link>
+        </div>
         <router-view></router-view>
     </div>
 </template>
@@ -39,7 +42,10 @@
             // 等同于将方法this.short()指向this.$store.commit('shortName'), 只有重新映射参数才为对象；其他情况不映射的话这样写：...mapMutations(['shortName'])
             ...mapMutations({
                 short: 'intro/shortName'
-            })
+            }),
+            goTo () {
+                this.$router.push('/intro/code')
+            }
         }
     }
 </script>
