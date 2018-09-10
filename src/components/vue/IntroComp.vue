@@ -30,21 +30,23 @@
         created () {
         },
         beforeRouteEnter (to, from, next) {
+            // 一般情况下，beforeRouteEnter 守卫 不能 访问 this，因为守卫在导航确认前被调用,因此即将登场的新组件还没被创建
+            // 不过，你可以通过传一个回调给 next来访问组件实例。在导航被确认的时候执行回调，并且把组件实例作为回调方法的参数：beforeRouteEnter (to, from, next) {next(vm => {// 通过 `vm` 访问组件实例})}
             console.log(to, from, next, '路由进入前')
             next()
         },
         beforeRouteUpdate (to, from, next) {
+            // 一般情况下，beforeRouteUpdate和beforeRouterLeave守卫都能 访问 this
             console.log(to, from, next, '路由更新时')
-            console.log(this)
             this.demo = to.params
             next()
         },
         // 好像无用?
-        // beforeRouterLeave (to, from, next) {
-        //     console.log(to, from, next, '路由跳出后')
-        //     window.confirm('Do you really want to leave? you have unsaved changes!')
-        //     next()
-        // },
+        beforeRouterLeave (to, from, next) {
+            console.log(to, from, next, '路由跳出后')
+            window.confirm('Do you really want to leave? you have unsaved changes!')
+            // next()
+        },
         // 辅助函数mapState和mapGetters都会返回一个对象
         computed: mapState('intro',{
             name: 'name',

@@ -25,9 +25,11 @@ const routes = [
     component: IntroComp,
     beforeEnter: (to, from, next) => {
       // 相当于局部路由的beforeEach方法；同样也可以写在组件内部，用这个方法实现：beforeRouteEnter
-      // console.log(to, from, next)
+      console.log('这里在路由声明的时候就进行加入钩子 => 相当于局部路由的beforeEach方法；同样也可以写在组件内部，用这个方法实现：beforeRouteEnter')
+      console.log(to.meta, '<<<<<路由元信息通过$route访问')
       next()
     },
+    meta: {requiresAuth: true},
     children: [
       {
         path: 'age',
@@ -83,7 +85,18 @@ const router = new VueRouter({
 //   // console.log(to.params, 'to.params')
 //   // console.log(from.params, 'from.params')
 //   // 确保要调用 next 方法，否则钩子就不会被 resolved
-//   next()
+//   if (!!to.meta.requiresAuth) {
+//     // 如果目标路由的元信息需要requiresAuth字段，那么假设接下来需要通过Auth模块的验证，才能继续执行
+//     if (!Auth.isLogin) {
+//       next({
+//         path: '/login'
+//       })
+//     } else {
+//       next()
+//     }
+//   } else {
+//     next()
+//   }
 // })
 
 new Vue({
