@@ -5,7 +5,9 @@ const fs = require('fs')
 
 // vue ssr
 const Vue = require('vue')
-const VueServerRender = require('vue-server-renderer').createRenderer({})
+const VueServerRender = require('vue-server-renderer').createRenderer({
+    template: fs.readFileSync('./template/vueSSR.html', 'utf-8')
+})
 
 // 已经实现了类似webpack的插件clean-webpack-plugin功能
 const rm = require('./pkg/rm')
@@ -113,22 +115,8 @@ const server = http.createServer(async (req, res) => {
                         res.statusCode(500).end('ssr服务器内部错误')
                     }
                     console.log('0910输出html：', html)
-                    res.end(`
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head><title>Hello</title></head>
-                        <body>${html}</body>
-                        </html>
-                    `)
+                    res.end(html)
                 })
-                // const readStream = fs.createReadStream('../dist/vue.html')
-                // readStream.on('data', (chunk) => {
-                //     result += chunk
-                // });
-                // readStream.on('end', () => {
-                //     res.writeHeader(200, {'Content-Type':'text/html;charset=UTF-8'})
-                //     res.end(result)
-                // });
             } else if (req.url === '/react.html') {
                 let result = ''
                 const readStream = fs.createReadStream('../dist/react.html')
