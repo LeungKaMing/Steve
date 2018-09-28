@@ -11,6 +11,8 @@ const VueServerRender = require('vue-server-renderer').createRenderer({
 
 // 已经实现了类似webpack的插件clean-webpack-plugin功能
 const rm = require('./pkg/rm')
+// 生成vue实例的工厂函数
+const createAppFactory = require('./pkg/createAppFactory')
 
 let webpackBundleResult = false
 
@@ -105,12 +107,18 @@ const server = http.createServer(async (req, res) => {
                     res.end(result)
                 });
             } else if (req.url === '/vueSSR.html') {
-                let result = ''
-                const app = new Vue({
-                    template: '<div>Hello Vue SSR</div>'
-                })
-                
-                VueServerRender.renderToString(app, (err, html) => {
+                // 渲染上下文对象 => 写法与vue保持一致
+                const templateContext = {
+                    title: 'vue ssr demo',
+                    meta: `
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                    `
+                }
+                const context = req.url
+                const app = createAppFactory(context)
+                VueServerRender.renderToString(app, templateContext, (err, html) => {
                     if (err) {
                         res.statusCode(500).end('ssr服务器内部错误')
                     }

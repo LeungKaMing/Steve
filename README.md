@@ -31,6 +31,28 @@ prerender-spa-plugin 插件可以帮到你
 如果你倾向于使用提供了平滑开箱即用体验的更高层次解决方案，你应该去尝试使用 Nuxt.js。
 如果你需要更直接地控制应用程序的结构，Nuxt.js 并不适合这种使用场景，你应该直接用vue ssr。
 ```
+- 如何保持客户端和服务端共用同一份vue代码
+```
+1. 由于没有动态更新，所有的生命周期钩子函数中，只有 beforeCreate 和 created 会在服务器端渲染(SSR)过程中被调用。
+2.1. 不要在beforeCreate 和 created两个生命周期函数里产生会对全局引起副作用的代码，例如：设置定时器setInterval。
+2.2. 在纯客户端(client-side only)的代码中，我们可以设置一个 timer，然后在 beforeDestroy 或 destroyed 生命周期时将其销毁。但是，由于在 SSR 期间并不会调用销毁钩子函数，所以 timer 将永远保留下来。为了避免这种情况，请将副作用代码移动到 beforeMount 或 mounted 或其他生命周期中。
+3. 通用代码不可接受特定平台的 API，因此如果你的代码中，直接使用了像 window 或 document，这种仅浏览器可用的全局变量，则会在 Node.js 中执行时抛出错误，反之也是如此。
+4. api请求统一用axios来处理。
+5.1. 编写客户端代码时，我们只会考虑当前请求所创建的Vue实例代码；但是编写服务端代码时，我们要知道NodeJS服务启动后，在不处理的情况下所创建的Vue实例将【只进行一次取值并留存在内存中】，这意味着它将在每个传入的请求之间共享，很容易导致交叉请求状态污染(cross-request state pollution)。
+5.2. 因此，我们不应该直接在服务端创建一个应用程序实例，而是应该暴露一个可以重复执行的工厂函数，为每个请求创建新的应用程序实例：
+// createAppFactory.js
+// 同样的规则也适用于 router、store 和 event bus 实例。你不应该直接从模块导出并将其导入到应用程序中，而是需要在 createAppFactory 中创建一个新的实例，并从根 Vue 实例注入。
+const Vue = require('vue')
+module.exports = function createAppFactory (context) {
+  return new Vue({
+    data: {
+      url: context.url
+    },
+    template: `<div>访问的 URL 是： {{ url }}</div>`
+  })
+}
+
+```
 6. pwa
 7. 单元测试(x factor)
 8. angular基本配置(x factor)
