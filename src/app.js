@@ -4,15 +4,13 @@ const {exec} = require('child_process')
 const fs = require('fs')
 
 // vue ssr
-const Vue = require('vue')
-const VueServerRender = require('vue-server-renderer').createRenderer({
-    template: fs.readFileSync('./template/vueSSR.html', 'utf-8')
-})
+// const serverBundle = fs.readFileSync(path.join(__dirname, '../dist/assets/serverBundle.js'), 'utf-8')
+// const VueServerRender = require('vue-server-renderer').createBundleRenderer(serverBundle, {
+//     template: fs.readFileSync(path.join(__dirname, './template/vueSSR.html'), 'utf-8')
+// })
 
 // 已经实现了类似webpack的插件clean-webpack-plugin功能
 const rm = require('./pkg/rm')
-// 生成vue实例的工厂函数
-const createAppFactory = require('./pkg/createAppFactory')
 
 let webpackBundleResult = false
 
@@ -116,15 +114,35 @@ const server = http.createServer(async (req, res) => {
                         <meta http-equiv="X-UA-Compatible" content="ie=edge">
                     `
                 }
-                const context = req.url
-                const app = createAppFactory(context)
-                VueServerRender.renderToString(app, templateContext, (err, html) => {
-                    if (err) {
-                        res.statusCode(500).end('ssr服务器内部错误')
-                    }
-                    console.log('0910输出html：', html)
-                    res.end(html)
-                })
+                // const context = {
+                //     url: req.url
+                // }
+                // VueServerRender.renderToString(res.app, templateContext, (err, html) => {
+                //     if (err) {
+                //         if (err.code === 404) {
+                //             res.status(404).end('Page not found')
+                //         } else {
+                //             res.status(500).end('SSR Internal Server Error')
+                //         }
+                //     } else {
+                //         res.end(html)
+                //     }
+                // }) 
+
+                // createApp(context).then((res) => {
+                //     console.log('check:', res)
+                //     VueServerRender.renderToString(res.app, templateContext, (err, html) => {
+                //         if (err) {
+                //             if (err.code === 404) {
+                //                 res.status(404).end('Page not found')
+                //             } else {
+                //                 res.status(500).end('SSR Internal Server Error')
+                //             }
+                //         } else {
+                //             res.end(html)
+                //         }
+                //     })
+                // })
             } else if (req.url === '/react.html') {
                 let result = ''
                 const readStream = fs.createReadStream('../dist/react.html')
@@ -187,6 +205,6 @@ const server = http.createServer(async (req, res) => {
    
 })
 
-server.listen(8080, () => {
-    console.log('启动服务，端口为8080')
+server.listen(1234, () => {
+    console.log('启动服务，端口为1234')
 })
