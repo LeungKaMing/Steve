@@ -3,12 +3,6 @@ const path = require('path')
 const {exec} = require('child_process')
 const fs = require('fs')
 
-// vue ssr
-// const serverBundle = fs.readFileSync(path.join(__dirname, '../dist/assets/serverBundle.js'), 'utf-8')
-// const VueServerRender = require('vue-server-renderer').createBundleRenderer(serverBundle, {
-//     template: fs.readFileSync(path.join(__dirname, './template/vueSSR.html'), 'utf-8')
-// })
-
 // 已经实现了类似webpack的插件clean-webpack-plugin功能
 const rm = require('./pkg/rm')
 
@@ -26,6 +20,7 @@ function handleArgv (req) {
     return new Promise((resolve, reject) => {
         process.argv.slice(2).forEach((arg) => {
             arg = arg.replace(/-/g, '')
+            console.log(arg, '<<<<<<<')
             switch (arg) {
                 case 'webpack:dev':
                     // webpack
@@ -73,7 +68,8 @@ function handleArgv (req) {
                     })
                     break
                 default:
-                    res.end('Hello World!')
+                    // res.end('Hello World!')
+                    resolve('webpack bundle done')
             }
         })
     })
@@ -105,29 +101,36 @@ const server = http.createServer(async (req, res) => {
                     res.end(result)
                 });
             } else if (req.url === '/vueSSR.html') {
-                // 渲染上下文对象 => 写法与vue保持一致
-                const templateContext = {
-                    title: 'vue ssr demo',
-                    meta: `
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-                    `
+                // vue ssr
+                const isServerBundle = path.join(__dirname, '../dist/assets/vue-ssr-server-bundle.json')
+                if (!!fs.existsSync(isServerBundle)) {
+                    const serverBundle = fs.readFileSync(path.join(__dirname, '../dist/assets/vue-ssr-server-bundle.json'), 'utf-8')
+                    const VueServerRender = require('vue-server-renderer').createBundleRenderer(serverBundle, {
+                        template: fs.readFileSync(path.join(__dirname, './template/vueSSR.html'), 'utf-8')
+                    })
+                    // 渲染上下文对象 => 写法与vue保持一致
+                    const templateContext = {
+                        title: 'vue ssr demo',
+                        meta: `
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                        `
+                    }
+                    VueServerRender.renderToString(res.app, templateContext, (err, html) => {
+                        if (err) {
+                            if (err.code === 404) {
+                                res.status(404).end('Page not found')
+                            } else {
+                                res.status(500).end('SSR Internal Server Error')
+                            }
+                        } else {
+                            res.end(html)
+                        }
+                    })
+                } else {
+                    res.end('ssr??')
                 }
-                // const context = {
-                //     url: req.url
-                // }
-                // VueServerRender.renderToString(res.app, templateContext, (err, html) => {
-                //     if (err) {
-                //         if (err.code === 404) {
-                //             res.status(404).end('Page not found')
-                //         } else {
-                //             res.status(500).end('SSR Internal Server Error')
-                //         }
-                //     } else {
-                //         res.end(html)
-                //     }
-                // }) 
 
                 // createApp(context).then((res) => {
                 //     console.log('check:', res)

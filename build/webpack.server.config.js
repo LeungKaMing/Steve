@@ -4,7 +4,10 @@ const merge = require('webpack-merge');
 const VueSSRServerPlugin = require('vue-server-renderer/server-plugin')
 
 const baseConfig = require('./webpack.base.config')
+baseConfig.entry = {ssrEntry: path.resolve(__dirname, '../src/entry/entry-server.js')}
 baseConfig.output.libraryTarget = 'commonjs2'
+baseConfig.plugins.pop()
+baseConfig.optimization = {}  // ssr有分块设置会报错
 
 module.exports = merge(baseConfig, {
   target: 'node',
