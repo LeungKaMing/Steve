@@ -68,8 +68,7 @@ function handleArgv (req) {
                     })
                     break
                 default:
-                    // res.end('Hello World!')
-                    resolve('webpack bundle done')
+                    res.end('Hello World!')
             }
         })
     })
@@ -202,7 +201,7 @@ const server = http.createServer(async (req, res) => {
             }
             break
         default:
-            fs.end('bundle fail no matter what bundle tool u r using.')
+            res.end('bundle fail no matter what bundle tool u r using.')
             break
     }
    
