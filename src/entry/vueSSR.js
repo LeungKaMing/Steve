@@ -9,7 +9,7 @@ export function createApp () {
   const router = createRouter()
   const store = createStore()
   // 同步路由状态(route state)到 store
-  sync(store, router)
+  // sync(store, router)
 
   const app = new Vue({
     // 根实例简单的渲染应用程序组件。

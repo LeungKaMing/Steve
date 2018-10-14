@@ -20,7 +20,6 @@ function handleArgv (req) {
     return new Promise((resolve, reject) => {
         process.argv.slice(2).forEach((arg) => {
             arg = arg.replace(/-/g, '')
-            console.log(arg, '<<<<<<<')
             switch (arg) {
                 case 'webpack:dev':
                     // webpack
@@ -32,8 +31,23 @@ function handleArgv (req) {
                                 return;
                             }
                             console.log('>>>>>>webpack开发环境构建完成<<<<<<<')
-                            // console.log(`stdout: ${stdout}`);
-                            // console.log(`stderr: ${stderr}`);
+                            webpackBundleResult = true  // 打包完成标识
+                            resolve('webpack bundle done')
+                        })
+                    } else {
+                        resolve('webpack bundle done')
+                    }
+                    break
+                case 'webpack:ssr':
+                    // webpack
+                    if (!webpackBundleResult) {
+                        exec('cd ../ && npm run webpack:ssr', (error, stdout, stderr) => {
+                            if (error) {
+                                console.error(`exec error: ${error}`);
+                                reject('webpack bundle fail')
+                                return;
+                            }
+                            console.log('>>>>>>webpack ssr环境构建完成<<<<<<<')
                             webpackBundleResult = true  // 打包完成标识
                             resolve('webpack bundle done')
                         })
@@ -102,10 +116,14 @@ const server = http.createServer(async (req, res) => {
             } else if (req.url === '/vueSSR.html') {
                 // vue ssr
                 const isServerBundle = path.join(__dirname, '../dist/assets/vue-ssr-server-bundle.json')
+                const isClientBundle = path.join(__dirname, '../dist/assets/vue-ssr-client-manifest.json')
                 if (!!fs.existsSync(isServerBundle)) {
-                    const serverBundle = fs.readFileSync(path.join(__dirname, '../dist/assets/vue-ssr-server-bundle.json'), 'utf-8')
-                    const VueServerRender = require('vue-server-renderer').createBundleRenderer(serverBundle, {
-                        template: fs.readFileSync(path.join(__dirname, './template/vueSSR.html'), 'utf-8')
+                    const {createBundleRenderer} = require('vue-server-renderer')
+                    const serverBundle = require(path.join(__dirname, '../dist/assets/vue-ssr-server-bundle.json'))
+                    const clientManifest = require(path.join(__dirname, '../dist/assets/vue-ssr-client-manifest.json'))
+                    let renderer = createBundleRenderer(serverBundle, {
+                        template: fs.readFileSync(path.join(__dirname, './template/vueSSR.html'), 'utf-8'),
+                        clientManifest
                     })
                     // 渲染上下文对象 => 写法与vue保持一致
                     const templateContext = {
@@ -114,37 +132,26 @@ const server = http.createServer(async (req, res) => {
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <meta http-equiv="X-UA-Compatible" content="ie=edge">
-                        `
+                        `,
+                        url: req.url
                     }
-                    VueServerRender.renderToString(res.app, templateContext, (err, html) => {
+                    // 渲染有问题的代码
+                    renderer.renderToString(templateContext, (err, html) => {
                         if (err) {
+                            console.log(err, html, '<<<<<<<<gg')
                             if (err.code === 404) {
                                 res.status(404).end('Page not found')
                             } else {
                                 res.status(500).end('SSR Internal Server Error')
                             }
                         } else {
+                            console.log('<<<<<<<<<<ok')
                             res.end(html)
                         }
                     })
                 } else {
                     res.end('ssr??')
                 }
-
-                // createApp(context).then((res) => {
-                //     console.log('check:', res)
-                //     VueServerRender.renderToString(res.app, templateContext, (err, html) => {
-                //         if (err) {
-                //             if (err.code === 404) {
-                //                 res.status(404).end('Page not found')
-                //             } else {
-                //                 res.status(500).end('SSR Internal Server Error')
-                //             }
-                //         } else {
-                //             res.end(html)
-                //         }
-                //     })
-                // })
             } else if (req.url === '/react.html') {
                 let result = ''
                 const readStream = fs.createReadStream('../dist/react.html')
