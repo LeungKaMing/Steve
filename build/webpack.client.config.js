@@ -5,11 +5,9 @@ const VueSSRClientPlugin = require('vue-server-renderer/client-plugin')
 
 const baseConfig = require('./webpack.base.config')
 baseConfig.entry = {ssrClientEntry: path.resolve(__dirname, '../src/entry/entry-client.js')}
-baseConfig.output.libraryTarget = 'commonjs2'
-// baseConfig.optimization = {}  // ssr有分块设置会报错
 
 module.exports = merge(baseConfig, {
-  devtool: 'inline-source-map',
+  devtool: 'source-map',
   mode: 'development',
   plugins: [
     new webpack.HotModuleReplacementPlugin(),

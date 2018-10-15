@@ -1,5 +1,5 @@
 <template>
-    <div>I am in universal.</div>
+    <div id="app">123</div>
 </template>
 
 <style>

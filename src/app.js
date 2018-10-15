@@ -117,7 +117,7 @@ const server = http.createServer(async (req, res) => {
                 // vue ssr
                 const isServerBundle = path.join(__dirname, '../dist/assets/vue-ssr-server-bundle.json')
                 const isClientBundle = path.join(__dirname, '../dist/assets/vue-ssr-client-manifest.json')
-                if (!!fs.existsSync(isServerBundle)) {
+                if (!!fs.existsSync(isServerBundle) && !!fs.existsSync(isClientBundle)) {
                     const {createBundleRenderer} = require('vue-server-renderer')
                     const serverBundle = require(path.join(__dirname, '../dist/assets/vue-ssr-server-bundle.json'))
                     const clientManifest = require(path.join(__dirname, '../dist/assets/vue-ssr-client-manifest.json'))
