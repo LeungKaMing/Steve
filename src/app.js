@@ -138,14 +138,12 @@ const server = http.createServer(async (req, res) => {
                     // 渲染有问题的代码
                     renderer.renderToString(templateContext, (err, html) => {
                         if (err) {
-                            console.log(err, html, '<<<<<<<<gg')
                             if (err.code === 404) {
                                 res.status(404).end('Page not found')
                             } else {
                                 res.status(500).end('SSR Internal Server Error')
                             }
                         } else {
-                            console.log('<<<<<<<<<<ok')
                             res.end(html)
                         }
                     })
