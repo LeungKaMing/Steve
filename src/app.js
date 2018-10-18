@@ -2,6 +2,7 @@ const http = require('http')
 const path = require('path')
 const {exec} = require('child_process')
 const fs = require('fs')
+const { URL } = require('url'); // 用于url处理与解析 
 
 // 已经实现了类似webpack的插件clean-webpack-plugin功能
 const rm = require('./pkg/rm')
@@ -103,7 +104,7 @@ const server = http.createServer(async (req, res) => {
                     res.writeHeader(200, {'Content-Type':'text/html;charset=UTF-8'})
                     res.end(result)
                 });
-            } else if (req.url === '/vue.html') {
+            } else if (/\/vue.html/.test(req.url)) {
                 let result = ''
                 const readStream = fs.createReadStream('../dist/vue.html')
                 readStream.on('data', (chunk) => {
@@ -113,8 +114,7 @@ const server = http.createServer(async (req, res) => {
                     res.writeHeader(200, {'Content-Type':'text/html;charset=UTF-8'})
                     res.end(result)
                 });
-            } else if (req.url === '/vueSSR.html') {
-                // vue ssr
+            } else if (/\/vuessr/.test(req.url)) {
                 const isServerBundle = path.join(__dirname, '../dist/assets/vue-ssr-server-bundle.json')
                 const isClientBundle = path.join(__dirname, '../dist/assets/vue-ssr-client-manifest.json')
                 if (!!fs.existsSync(isServerBundle) && !!fs.existsSync(isClientBundle)) {
@@ -125,6 +125,8 @@ const server = http.createServer(async (req, res) => {
                         template: fs.readFileSync(path.join(__dirname, './template/vueSSR.html'), 'utf-8'),
                         clientManifest
                     })
+                    const orignUrl = 'http://' + req.headers.host + req.url
+                    // console.log('>>>>>>>>', orignUrl, req.url)
                     // 渲染上下文对象 => 写法与vue保持一致
                     const templateContext = {
                         title: 'vue ssr demo',
@@ -133,15 +135,18 @@ const server = http.createServer(async (req, res) => {
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <meta http-equiv="X-UA-Compatible" content="ie=edge">
                         `,
-                        url: req.url
+                        url: new URL(orignUrl),
+                        tempUrl: req.url
                     }
                     // 渲染有问题的代码
                     renderer.renderToString(templateContext, (err, html) => {
                         if (err) {
                             if (err.code === 404) {
-                                res.status(404).end('Page not found')
+                                res.statusCode = 404
+                                res.end('Page not found')
                             } else {
-                                res.status(500).end('SSR Internal Server Error')
+                                res.statusCode = 500
+                                res.end('SSR Internal Server Error')
                             }
                         } else {
                             res.end(html)
@@ -150,7 +155,7 @@ const server = http.createServer(async (req, res) => {
                 } else {
                     res.end('ssr??')
                 }
-            } else if (req.url === '/react.html') {
+            } else if (/\/react.html/.test(req.url)) {
                 let result = ''
                 const readStream = fs.createReadStream('../dist/react.html')
                 readStream.on('data', (chunk) => {
@@ -160,7 +165,7 @@ const server = http.createServer(async (req, res) => {
                     res.writeHeader(200, {'Content-Type':'text/html;charset=UTF-8'})
                     res.end(result)
                 });
-            } else if (req.url === '/favicon.ico') {
+            } else if (/favicon\.ico/.test(req.url)) {
                 res.end('favicon.ico')
             } else {
                 // 除js外的静态资源
