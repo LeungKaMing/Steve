@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Vuex from 'vuex'
 
-import intro from '../store/intro/module.js'
+import intro from './intro/module.js'
 
 Vue.use(Vuex)
 

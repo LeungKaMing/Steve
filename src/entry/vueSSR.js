@@ -1,21 +1,23 @@
 import Vue from 'vue'
 import App from '../pages/App.vue'
 import {createRouter} from '../entry/createRouter'
-// import {createStore} from '../entry/createStore'
-
+import {createStore} from '../entry/createStore'
+import { sync } from 'vuex-router-sync'
 
 // 导出一个工厂函数，用于创建新的应用程序、router 和 store 实例
 export function createApp () {
   const router = createRouter()
-  // const store = createStore()
-  // 同步路由状态(route state)到 store
-  // sync(store, router)
+  const store = createStore()
 
+  // 同步路由状态(route state)到 store
+  sync(store, router)
+
+  // 创建应用程序实例，将 router 和 store 注入
+  // * tips: store里面的dispath是对应action，commit是对应mutaion
   const app = new Vue({
-    // 根实例简单的渲染应用程序组件。
     router,
-    // store,
+    store,
     render: h => h(App)
   })
-  return { app, router }
+  return { app, router, store }
 }

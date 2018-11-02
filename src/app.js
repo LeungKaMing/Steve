@@ -138,9 +138,9 @@ const server = http.createServer(async (req, res) => {
                         url: new URL(orignUrl),
                         tempUrl: req.url
                     }
-                    // 渲染有问题的代码
                     renderer.renderToString(templateContext, (err, html) => {
                         if (err) {
+                            console.log(err, '<<<<<')
                             if (err.code === 404) {
                                 res.statusCode = 404
                                 res.end('Page not found')
