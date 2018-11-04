@@ -20,13 +20,13 @@ export function createStore () {
         // `store.dispatch()` 会返回 Promise，
         // 以便我们能够知道数据在何时更新
         return fetchItem(id).then(item => {
-          console.log('in actions\' fetchItem: ', id, item)
           commit('setItem', { id, item })
         })
       }
     },
     mutations: {
       setItem (state, { id, item }) {
+        // Vue.set 的第一个参数必须是响应式对象，例如：$store.state，$router.route...；第二个参数和第三个参数分别是属性和值
         Vue.set(state.items, id, item)
       }
     }
