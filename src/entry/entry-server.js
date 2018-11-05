@@ -17,16 +17,19 @@ export default context => {
       }
 
       Promise.all(matchedComponents.map((comp) => {
+        // 1. 在所有预取钩子(preFetch hook) resolve 后，我们的 store 现在已经填充入渲染应用程序所需的状态。
         if (comp.asyncData) {
           return comp.asyncData({
             store,
             route: router.currentRoute
           })
         }
-      }))
-      
-      // Promise 应该 resolve 应用程序实例，以便它可以渲染
-      resolve(app)
+      })).then(()=>{
+        // 2. 当我们将状态附加到上下文【context】，状态将自动序列化为 `window.__INITIAL_STATE__`，并注入 HTML【该情况仅仅针对非ssr入口意外以外的组件，即Home.vue是不能有window的，否则会报错】。
+        context.state = store.state
+        // 3. Promise 应该 resolve 应用程序实例，以便它可以渲染
+        resolve(app)
+      }).catch(reject)
     }, reject)
   })
 }

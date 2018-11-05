@@ -122,6 +122,7 @@ const server = http.createServer(async (req, res) => {
                     const serverBundle = require(path.join(__dirname, '../dist/assets/vue-ssr-server-bundle.json'))
                     const clientManifest = require(path.join(__dirname, '../dist/assets/vue-ssr-client-manifest.json'))
                     let renderer = createBundleRenderer(serverBundle, {
+                        runInNewContext: false,
                         template: fs.readFileSync(path.join(__dirname, './template/vueSSR.html'), 'utf-8'),
                         clientManifest
                     })
