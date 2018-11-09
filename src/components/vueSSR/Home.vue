@@ -12,6 +12,7 @@
 
 <script>
 import * as ut from './assets/scripts/utils'
+
 export default {
   // ssr预渲染数据优先级会比created还要早，详情可看entry-server.js
   // [自定义静态函数-asyncData]：注意，由于此函数会在组件实例化之前调用，所以它无法访问 this。需要将 store 和路由信息作为参数传递进去
