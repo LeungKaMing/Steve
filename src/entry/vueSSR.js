@@ -3,6 +3,9 @@ import App from '../pages/App.vue'
 import {createRouter} from '../entry/createRouter'
 import {createStore} from '../entry/createStore'
 import { sync } from 'vuex-router-sync'
+import * as ut from '../components/vueSSR/assets/scripts/utils'
+
+Vue.use(ut)
 
 // 导出一个工厂函数，用于创建新的应用程序、router 和 store 实例
 export function createApp () {
