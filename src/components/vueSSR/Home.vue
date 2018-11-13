@@ -20,16 +20,14 @@ export default {
     return store.dispatch('fetchItem', 1)
   },
   title: 'I am home', // 插件混合自定义属性来玩
-  mixins: [ut.default], // 插件混合自定义属性来玩
+  mixins: [ut.default], // 插件混合自定义属性来玩【同时兼容客户端和服务端两套代码】
   data () {
     return {
       msg: 'hi, I am Leung.'
     }
   },
   created () {
-    // console.log('服务器端渲染上下文：', this.$ssrContext.title)
-    console.log('客户端（可以理解成公共）: ', this.$options.data)
-    console.log('客户端2（可以理解成公共）: ', this.$options.data())
+    console.log('Vue会merge相同名字的钩子函数')
   }
 }
 </script>
