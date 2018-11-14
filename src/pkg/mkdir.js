@@ -8,6 +8,39 @@ const rm = require('./rm')
 // 临时数组，用于存放某个目录下的所有文件
 let arr = []
 
+// 默认参数
+let projectPath = 'vue'
+let frame = 'vue'
+let deletePath = ''
+
+// 用户传入的参数
+const input = process.argv.slice(2)
+// 删除目录只能传一个参数，创建目录则不限，只针对参数做处理【约定】
+input.map((i) => {
+	let key = i.split('=')[0].replace('-', '')
+	let val = i.split('=')[1]
+	switch (key) {
+		case 'd':
+			if (input.length === 1) {
+				deletePath = path.resolve(__dirname, `../../project/${val}/`)
+				// 指定删除目录
+				rm(deletePath, deletePath)
+			} else {
+				console.log('参数有误，请检查是否存在用于删除目录的参数d，并且传参长度为1')
+			}
+			break
+		case 'p':
+			projectPath = val
+			break
+		case 'f':
+			frame = val
+			break
+	}
+})
+
+// 创建的目录
+let userInputDir = path.resolve(__dirname, `../../project/${projectPath}/`)
+
 /**
  * use: 从指定配置模版进行注入，创建配置文件
  * why:
@@ -15,23 +48,52 @@ let arr = []
  * params:
  */
 // webpack
-let webpackBaseTemplate = path.resolve(__dirname, './buildToolsTemplate/webpack.base.template.txt');
-let webpackDevTemplate = path.resolve(__dirname, './buildToolsTemplate/webpack.dev.template.txt');
-let webpackProdTemplate = path.resolve(__dirname, './buildToolsTemplate/webpack.prod.template.txt');
-let webpackClientTemplate = path.resolve(__dirname, './buildToolsTemplate/webpack.client.template.txt');
-let webpackServerTemplate = path.resolve(__dirname, './buildToolsTemplate/webpack.server.template.txt');
+let webpackBaseTemplate = path.resolve(__dirname, './vueTemplate/build/webpack.base.config.txt');
+let webpackDevTemplate = path.resolve(__dirname, './vueTemplate/build/webpack.dev.config.txt');
+let webpackProdTemplate = path.resolve(__dirname, './vueTemplate/build/webpack.prod.config.txt');
+let webpackClientTemplate = path.resolve(__dirname, './vueTemplate/build/webpack.client.config.txt');
+let webpackServerTemplate = path.resolve(__dirname, './vueTemplate/build/webpack.server.config.txt');
 
 // vue
-let vueEntryTemplate = path.resolve(__dirname, './vueTemplate/entry/');
-let vuePagesTemplate = path.resolve(__dirname, './vueTemplate/pages/App.vue');
-let vueStoreTemplate = path.resolve(__dirname, './vueTemplate/store/');
-let vueTemplate = path.resolve(__dirname, './vueTemplate/template/vue.html');
+let vueAssetsTemplate = path.resolve(__dirname, './vueTemplate/src/assets/');
+let vueEntryTemplate = path.resolve(__dirname, './vueTemplate/src/entry/');
+let vuePagesTemplate = path.resolve(__dirname, './vueTemplate/src/pages/');
+let vueCompTemplate = path.resolve(__dirname, './vueTemplate/src/components/');
+let vueStoreTemplate = path.resolve(__dirname, './vueTemplate/src/store/');
 
-// rootdir
-let rootDir = path.resolve(__dirname, '../../project/vue/')
+/**
+ * use: 抽离公共拼接路径的代码部分
+ */
+function commonPinThing (templateName, fReadName) {
+	// 临时容器
+	let temp = []
+	// 清空临时数组
+	arr = []
+	let result = findAll(templateName)
+	result.map((r) => {
+		// r 是模版中的文件路径
+		let pinThing = fReadName.split('src')[0] + r.split('vueTemplate/')[1]	// 结合用户传入创建的目录路径
+		if (!fs.existsSync(pinThing)) {
+			if (path.extname(pinThing)) {
+				// 有后缀的证明是文件；补充检查该文件所在目录，不存在则创建，存在则忽略
+				checkBaseDir(path.dirname(pinThing), path.dirname(pinThing))
+				// 把模版中的某个文件写入去初始化项目的路径下
+				// 【***特殊情况】选择template目录下带ssr字样的才写入去初始化项目的路径下
+				if (/\/template\//ig.test(r)) {
+					if (/ssr/ig.test(r) && /ssr/ig.test(frame)) {
+						fs.copyFileSync(r, pinThing)
+					} else {
+						return
+					}
+				}
+				fs.copyFileSync(r, pinThing)
+			}
+		}
+	})
+}
 
 function injectConfig (fReadName, fWriteName, target) {
-	if (target === 'webpackBaseTemplate') {
+	if (target === 'webpack') {
 		let fRead = fs.createReadStream(fReadName);
 		let fWrite = fs.createWriteStream(fWriteName);
 		
@@ -77,97 +139,49 @@ function injectConfig (fReadName, fWriteName, target) {
 		});
 	
 		objReadline.on('close', ()=>{
-			console.log('readline close...');
 			// 判断是否生成了模板 => 是则把build/webpack.base.config.js替换掉
 			if (fs.existsSync(fWriteName)) {
+				// todo: 1114
 				// demo: 测试覆盖，实际项目肯定是不能覆盖给定的文件的
 				fs.copyFileSync(fWriteName, path.resolve(__dirname, '../../build/webpack.base.config.js'));
 			}
 		})
 	} else if (target === 'src/assets') {
-		if (/\/src\/assets\/(\w+)/g.test(fReadName)) {
+		if (/\/src\/assets\/(\w+)/ig.test(fReadName)) {
 			let fileStat = fs.statSync(fReadName)
-			if (fs.statSync(fReadName)) {
+			if (!!fileStat) {
 				if (fileStat.isDirectory()) {
 					// 只允许传入的参数是目录
-					fReadName.replace(/\/src\/assets(\/\w+)+/g, function () {
-						switch (arguments[1].split('/')[1]) {
-							case 'style':
-								// console.log('style')
-								break
-							case 'images':
-								// console.log('images')
-								break
-							case 'scripts':
-								// console.log('scripts')
-								break
-							case 'template':
-								// console.log(path.resolve(__dirname, `${fReadName}/vue.html`))
-								fs.copyFileSync(vueTemplate, path.resolve(__dirname, `${fReadName}/vue.html`))
-								break
-						}
+					fReadName.replace(/\/src\/assets(\/\w+)+/ig, function () {
+						commonPinThing(vueAssetsTemplate, fReadName)
 					})
 				}
 			}
 		}
 	} else if (target === 'src/xxx') {
-		if (/\/src\/(\w+)/g.test(fReadName)) {
+		if (/\/src\/(\w+)/ig.test(fReadName)) {
 			let fileStat = fs.statSync(fReadName)
 			if (fs.statSync(fReadName)) {
 				if (fileStat.isDirectory()) {
 					// 只允许传入的参数是目录
 					fReadName.replace(/\/src\/(\w+)/, function () {
-						// console.log(arguments[1])
 						const name = arguments[1]
 						switch (name) {
 							case 'components':
-								console.log('components')
+								commonPinThing(vueCompTemplate, fReadName)
+								break
+							case 'pages':
+								commonPinThing(vuePagesTemplate, fReadName)
 								break
 							case 'entry':
-								console.log('entry')
-								// fs.copyFileSync(vueEntryTemplate, path.resolve(__dirname, `${fReadName}/vueEntry.js`))
-								// 清空临时数组
-								arr = []
-								let result2 = findAll(vueEntryTemplate)
-								result2.map((r) => {
-									// console.log(`${r} ----- ${r.split('vueTemplate/')[1]} ----- ${path.dirname(r.split('vueTemplate/')[1])} ----- ${fReadName} ----- >>>>>>r`)
-									let pinThing2 = fReadName.split(name)[0] + r.split('vueTemplate/')[1]	// 初始化项目需要拼接好的路径
-									if (!fs.existsSync(pinThing2)) {
-										if (path.extname(pinThing2)) {
-											// 有后缀的证明是文件
-											checkBaseDir(path.dirname(pinThing2), path.dirname(pinThing2))
-											// 把模版文件写入去初始化项目的路径下
-											fs.copyFileSync(r, pinThing2)
-										}
-									} else {
-										console.log('存在pinThing2')
-									}
-								})
+								commonPinThing(vueEntryTemplate, fReadName)
 								break
 							case 'store':
-								// 清空临时数组
-								arr = []
-								let result3 = findAll(vueStoreTemplate)
-								result3.map((r) => {
-									// console.log(`${r} ----- ${r.split('vueTemplate/')[1]} ----- ${path.dirname(r.split('vueTemplate/')[1])} ----- ${fReadName} ----- >>>>>>r`)
-									let pinThing = fReadName.split(name)[0] + r.split('vueTemplate/')[1]	// 初始化项目需要拼接好的路径
-									if (!fs.existsSync(pinThing)) {
-										if (path.extname(pinThing)) {
-											// 有后缀的证明是文件
-											checkBaseDir(path.dirname(pinThing), path.dirname(pinThing))
-											// 把模版文件写入去初始化项目的路径下
-											fs.copyFileSync(r, pinThing)
-										}
-									} else {
-										console.log('存在pinThing')
-									}
-								})
+								commonPinThing(vueStoreTemplate, fReadName)
 								break
 							case 'router':
-								console.log('router')
 								break
 							case 'config':
-								console.log('config')
 								break
 						}
 					})
@@ -225,7 +239,7 @@ function findAll (dir) {
 		const fileList = fs.readdirSync(dir)
 		// 排除以.开头的隐藏文件
 		fileList.map((file) => {
-			if (!/^\./g.test(file)) {
+			if (!/^\./ig.test(file)) {
 				file = path.resolve(__dirname, `${dir}/${file}`)	// 拼接好文件的完整路径
 				const fileStat = fs.statSync(file)
 				if (fileStat.isDirectory()) {
@@ -247,56 +261,53 @@ function findAll (dir) {
  * how：
  * params：-p 创建vue示例目录 -- mkfile() -t 在vue示例目录创建配置文件 -- injectConfig()
  */
-function mkfile (rootDir) {
-	if (fs.existsSync(rootDir)) {
-		// console.log('有就不会创建啦，傻的咩')
-		// 存在则走正常逻辑
-		process.argv.slice(2).forEach((arg) => {
-			arg = arg.replace(/-/g, '')
-			switch (arg) {
-				case 'p':
-				case 'project':
-					// 判断传入的参数是文件还是目录
-					let fileStat = fs.statSync(rootDir)
-					if (fileStat.isDirectory()) {
-						// 文件状态判断为目录
-						const fileList = fs.readdirSync(rootDir)
-						// console.log(`>>>>>demo/目录下有什么文件呢？期望为空：${fileList.length}`)
-						const readyToDir = [path.resolve(__dirname, `${rootDir}/build`), path.resolve(__dirname, `${rootDir}/src`), path.resolve(__dirname, `${rootDir}/src/assets`), path.resolve(__dirname, `${rootDir}/src/assets/style`), path.resolve(__dirname, `${rootDir}/src/assets/images`), path.resolve(__dirname, `${rootDir}/src/assets/scripts`), path.resolve(__dirname, `${rootDir}/src/assets/template`), path.resolve(__dirname, `${rootDir}/src/components`), path.resolve(__dirname, `${rootDir}/src/entry`), path.resolve(__dirname, `${rootDir}/src/store`), path.resolve(__dirname, `${rootDir}/src/router`), path.resolve(__dirname, `${rootDir}/src/config`)]
-
-						readyToDir.forEach((itemDir) => {
-							if (!fs.existsSync(itemDir)) {
-								checkBaseDir(itemDir, itemDir)	// 检查并最终创建目录后，递归
-								if (itemDir === path.resolve(__dirname, `${rootDir}/build`)) {
-									// 检查遍历项是否为build/目录，命中则调用注入函数
-									injectConfig(webpackBaseTemplate, path.resolve(__dirname, `${itemDir}/webpack.base.config.js`), 'webpackBaseTemplate')
-								} else if (/\/src\/assets(\/\w+)*/g.test(itemDir)) {
-									// 过滤出 src/assets 目录，单独处理
-									injectConfig(itemDir, '', 'src/assets')
-								} else if (/\/src\/\w+/g.test(itemDir)) {
-									// 过滤出除了src/assets 目录外的目录，例如: src/xxx 目录
-									injectConfig(itemDir, '', 'src/xxx')
-								}
-							} else {
-									console.log(`已经存在 ${itemDir}`)
-							}						
-						})
-					} else {
-							// 文件状态判断为文件
-							console.log('>>>>>这是文件啊')
-					}
-					break
-				case 'd':
-					rm('../../project', '../../project')
-					break
-				}
-		})
+function mkfile (userInputDir) {
+	if (!!deletePath) {
+		// 变量deletePath有值，证明用户是删除操作
+		return
 	} else {
-		checkBaseDir(path.dirname(rootDir), rootDir)	// 检查并最终创建目录后，递归
-		mkfile(rootDir)
+		if (fs.existsSync(userInputDir)) {
+			// console.log('有就不会创建啦，傻的咩')
+			// 存在则走正常逻辑
+			// 判断传入的参数是文件还是目录
+			let fileStat = fs.statSync(userInputDir)
+			if (fileStat.isDirectory()) {
+				// 文件状态判断为目录
+				let readyToDir = [path.resolve(__dirname, `${userInputDir}/build`), path.resolve(__dirname, `${userInputDir}/src`), path.resolve(__dirname, `${userInputDir}/src/assets`), path.resolve(__dirname, `${userInputDir}/src/assets/style`), path.resolve(__dirname, `${userInputDir}/src/assets/images`), path.resolve(__dirname, `${userInputDir}/src/assets/scripts`), path.resolve(__dirname, `${userInputDir}/src/components`), path.resolve(__dirname, `${userInputDir}/src/entry`), path.resolve(__dirname, `${userInputDir}/src/store`), path.resolve(__dirname, `${userInputDir}/src/router`), path.resolve(__dirname, `${userInputDir}/src/config`), path.resolve(__dirname, `${userInputDir}/src/pages`), path.resolve(__dirname, `${userInputDir}/src/assets/template`)]
+
+				readyToDir.forEach((itemDir) => {
+					if (!fs.existsSync(itemDir)) {
+						checkBaseDir(itemDir, itemDir)	// 检查并最终创建目录后，递归
+						if (/\/build/ig.test(itemDir)) {
+							// 检查遍历项是否为build/目录，命中则调用注入函数
+							// 还要检查是否为ssr项目
+							injectConfig(webpackBaseTemplate, path.resolve(__dirname, `${itemDir}/webpack.base.config.js`), 'webpack')
+							if (/ssr/ig.test(frame)) {
+								injectConfig(webpackClientTemplate, path.resolve(__dirname, `${itemDir}/webpack.client.config.js`), 'webpack')
+								injectConfig(webpackServerTemplate, path.resolve(__dirname, `${itemDir}/webpack.server.config.js`), 'webpack')
+							} else {
+								injectConfig(webpackDevTemplate, path.resolve(__dirname, `${itemDir}/webpack.dev.config.js`), 'webpack')
+								injectConfig(webpackProdTemplate, path.resolve(__dirname, `${itemDir}/webpack.prod.config.js`), 'webpack')
+							}
+						} else if (/\/src\/assets(\/\w+)*/ig.test(itemDir)) {
+							// 过滤出 src/assets 目录，单独处理
+							injectConfig(itemDir, '', 'src/assets')
+						} else if (/\/src\/\w+/ig.test(itemDir)) {
+							// 过滤出除了src/assets 目录外的目录，例如: src/xxx 目录
+							injectConfig(itemDir, '', 'src/xxx')
+						}
+					}				
+				})
+			} else {
+					// 文件状态判断为文件
+					console.log('>>>>>这是文件啊')
+			}
+		} else {
+			checkBaseDir(path.dirname(userInputDir), userInputDir)	// 检查并最终创建目录后，递归
+			mkfile(userInputDir)
+		}
 	}
 }
 
 // execute
-mkfile(rootDir)
-// console.log(findAll(path.resolve(__dirname, './vueTemplate/store/')))
+mkfile(userInputDir)
