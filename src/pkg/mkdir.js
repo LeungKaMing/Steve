@@ -65,7 +65,7 @@ let vueStoreTemplate = path.resolve(__dirname, './vueTemplate/src/store/');
 let babelrcTemplate = path.resolve(__dirname, './vueTemplate/.babelrc');
 let gitIgnoreTemplate = path.resolve(__dirname, './vueTemplate/.gitignore');
 let postcssTemplate = path.resolve(__dirname, './vueTemplate/postcss.config.js');
-let packageTemplate = path.resolve(__dirname, './vueTemplate/package.json');
+let packageTemplate = path.resolve(__dirname, './vueTemplate/package.txt');
 let readMeTemplate = path.resolve(__dirname, './vueTemplate/README.md');
 
 /**
@@ -87,16 +87,29 @@ function commonPinThing (templateName, fReadName) {
 				if (path.extname(pinThing)) {
 					// 有后缀的证明是文件；补充检查该文件所在目录，不存在则创建，存在则忽略
 					await checkBaseDir(path.dirname(pinThing), path.dirname(pinThing))
+					// todo: 1115
 					// 把模版中的某个文件写入去初始化项目的路径下
 					// 【***特殊情况】选择template目录下带ssr字样的才写入去初始化项目的路径下
-					if (/\/template\//ig.test(r)) {
-						if (/ssr/ig.test(r) && /ssr/ig.test(frame)) {
-							fs.copyFileSync(r, pinThing)
+					if (r === path.resolve(__dirname, './vueTemplate/src/assets/template/vueSSR.html') && frame === 'vuessr') {
+						let temp = path.resolve(userInputDir, 'src/assets/template/vueSSR.html')
+						if (fs.existsSync(temp)) {
+							fs.copyFileSync(r, temp)
 						} else {
-							return
+							fs.createWriteStream(temp)
+							fs.copyFileSync(r, temp)
 						}
+					} else if (r === path.resolve(__dirname, './vueTemplate/src/assets/template/vue.html') && frame === 'vue') {
+						let temp = path.resolve(userInputDir, 'src/assets/template/vue.html')
+						if (fs.existsSync(temp)) {
+							fs.copyFileSync(r, temp)
+						} else {
+							fs.createWriteStream(temp)
+							fs.copyFileSync(r, temp)
+						}
+					} else if (r !== path.resolve(__dirname, './vueTemplate/src/assets/template/vue.html') && r !== path.resolve(__dirname, './vueTemplate/src/assets/template/vuessr.html')) {
+						// 当前这两种情况上述已经做了处理，只有template这里比较特殊
+						fs.copyFileSync(r, pinThing)
 					}
-					fs.copyFileSync(r, pinThing)
 				}
 			}
 		})
@@ -104,8 +117,37 @@ function commonPinThing (templateName, fReadName) {
 		fs.copyFileSync(babelrcTemplate, fReadName + babelrcTemplate.split('/pkg/vueTemplate')[1])
 		fs.copyFileSync(gitIgnoreTemplate, fReadName + gitIgnoreTemplate.split('/pkg/vueTemplate')[1])
 		fs.copyFileSync(postcssTemplate, fReadName + postcssTemplate.split('/pkg/vueTemplate')[1])
-		fs.copyFileSync(packageTemplate, fReadName + packageTemplate.split('/pkg/vueTemplate')[1])
 		fs.copyFileSync(readMeTemplate, fReadName + readMeTemplate.split('/pkg/vueTemplate')[1])
+
+		// demo package.json
+		let fRead = fs.createReadStream(packageTemplate);
+		// 小处理：由于【需要额外处理的模版文件】都是txt后缀，所以指定package.txt需要转换json
+		let resultPath = fReadName + (packageTemplate.split('/pkg/vueTemplate')[1].replace(/\.txt/ig, '.json'))
+		let fWrite = fs.createWriteStream(resultPath);
+		let objReadline = readline.createInterface({
+				input: fRead,
+				terminal: true
+		});
+	
+		objReadline.on('line', (line)=>{
+			let temp = ''   // 由于逐行读取不能覆盖原有值，所以用容器装起来
+			const scriptsReg = /{{scriptsParams}}/
+			// 替换模板
+			if (scriptsReg.test(line)) {
+				if (/vuessr/ig.test(frame)) {
+					temp = line.replace(scriptsReg, '{"start": "webpack --config ./build/webpack.dev.config.js && webpack-dev-server --config ./build/webpack.dev.config.js --open", "webpack:sc": "webpack --config ./build/webpack.client.config.js", "webpack:ss": "webpack --config ./build/webpack.server.config.js", "webpack:ssr": "webpack --config ./build/webpack.client.config.js && webpack --config ./build/webpack.server.config.js"}')
+				} else {
+					temp = line.replace(scriptsReg, '{"start": "webpack --config ./build/webpack.dev.config.js && webpack-dev-server --config ./build/webpack.dev.config.js --open", "webpack:dev": "webpack --config ./build/webpack.dev.config.js", "webpack:prod": "webpack --config ./build/webpack.prod.config.js"}')
+				}
+				fWrite.write(temp + os.EOL); // 下一行
+			} else {
+				fWrite.write(line + os.EOL); // 下一行
+			}
+		});
+	
+		objReadline.on('close', ()=>{
+			console.log(`${userInputDir}项目已生成`)
+		})
 	}
 }
 
@@ -208,7 +250,6 @@ function injectConfig (fReadName, fWriteName, target) {
  * @param {*} pathWay 当前目录
  * @param {*} firstTimePath 第一次传入的目录
  * @desc dir = /a/b/c/d，有可能a,b,c,d都不存在，如果按理走回调，最多创建到a，b,c,c都创建不了 => 特别是应用在遍历这种异步环境 【重构于0813】
- * todo: 1115 改造为async / await
  */
 async function checkBaseDir (pathWay, firstTimePath) {
 	const lastPath = path.dirname(pathWay)
