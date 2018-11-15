@@ -13,10 +13,8 @@ module.exports = {
       rules: {{ruleParams}}
     },
     resolve:{
-      alias:{
-        'vue$':'vue/dist/vue.js'
-      },
-      extensions: ['.js', '.jsx', '.vue']
+      alias: {{aliasParams}},
+      extensions: {{extensionsParams}}
     },
     optimization: {
       splitChunks: {
