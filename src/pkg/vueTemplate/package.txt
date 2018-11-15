@@ -52,17 +52,7 @@
     "> 1%",
     "last 2 versions"
   ],
-  "scripts": {
-    "start": "webpack --config ./build/webpack.dev.config.js && webpack-dev-server --config ./build/webpack.dev.config.js --open",
-    "webpack:dev": "webpack --config ./build/webpack.dev.config.js",
-    "webpack:prod": "webpack --config ./build/webpack.prod.config.js",
-    "webpack:sc": "webpack --config ./build/webpack.client.config.js",
-    "webpack:ss": "webpack --config ./build/webpack.server.config.js",
-    "webpack:ssr": "webpack --config ./build/webpack.client.config.js && webpack --config ./build/webpack.server.config.js",
-    "parcel": "",
-    "rollup": "",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {{scriptsParams}},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/LeungKaMing/my-cli.git"
