@@ -9,38 +9,34 @@ const rm = require('./rm')
 let arr = []
 
 // 默认参数
-let projectPath = 'vue'
-let frame = 'vue'
+let projectPath = ''
+let frame = ''
 let deletePath = ''
+let userInputDir = ''
 
-// 用户传入的参数
-const input = process.argv.slice(2)
-// 删除目录只能传一个参数，创建目录则不限，只针对参数做处理【约定】
-input.map(async (i) => {
-	console.log(i, '<<<<')
-	let key = i.split('=')[0].replace('-', '')
-	let val = i.split('=')[1]
-	switch (key) {
-		case 'd':
-			if (input.length === 1) {
-				deletePath = path.resolve(__dirname, `../../project/${val}/`)
-				// 指定删除目录
-				await rm(deletePath, deletePath)
-			} else {
-				console.log('参数有误，请检查是否存在用于删除目录的参数d，并且传参长度为1')
-			}
-			break
-		case 'p':
-			projectPath = val
-			break
-		case 'f':
-			frame = val
-			break
+/*1:声明变量*/
+/*2：向屏幕输出，提示信息，要求输入num1*/
+process.stdout.write('请输入项目名称（默认为：ljm）：');
+/*3：监听用户的输入*/
+process.stdin.on('data', async (chunk) => {
+	if (String(chunk) === 'd') {
+		deletePath = path.resolve(__dirname, `../../project/${val}/`)
+		// 指定删除目录
+		await rm(deletePath, deletePath)
+		process.exit()
+	} else {
+		if (!projectPath) {
+			projectPath = String(chunk).trim();
+			/*4：向屏幕输出，提示信息，要求输入num2*/
+			process.stdout.write('请输入框架名称（默认为：vue，支持vuessr）：');
+		} else {
+			frame = String(chunk).trim();
+			// 创建的目录
+			userInputDir = path.resolve(__dirname, `../../project/${projectPath}/`)
+			mkfile(userInputDir)
+		}
 	}
-})
-
-// 创建的目录
-let userInputDir = path.resolve(__dirname, `../../project/${projectPath}/`)
+});
 
 /**
  * use: 从指定配置模版进行注入，创建配置文件
@@ -88,7 +84,7 @@ function commonPinThing (templateName, fReadName) {
 				if (path.extname(pinThing)) {
 					// 有后缀的证明是文件；补充检查该文件所在目录，不存在则创建，存在则忽略
 					await checkBaseDir(path.dirname(pinThing), path.dirname(pinThing))
-					// todo: 1115
+					// todo: 1116
 					// 把模版中的某个文件写入去初始化项目的路径下
 					// 【***特殊情况】选择template目录下带ssr字样的才写入去初始化项目的路径下
 					if (r === path.resolve(__dirname, './vueTemplate/src/assets/template/vueSSR.html') && frame === 'vuessr') {
@@ -107,7 +103,11 @@ function commonPinThing (templateName, fReadName) {
 							fs.createWriteStream(temp)
 							fs.copyFileSync(r, temp)
 						}
-					} else if (r !== path.resolve(__dirname, './vueTemplate/src/assets/template/vue.html') && r !== path.resolve(__dirname, './vueTemplate/src/assets/template/vuessr.html')) {
+					} else if (/\/entry\/vueEntry\.js/ig.test(r) && frame === 'vuessr') {
+						return
+					} else if (/\/entry\/vueSSR/ig.test(r) && frame === 'vue') {
+						return
+					} else if (r !== path.resolve(__dirname, './vueTemplate/src/assets/template/vue.html') && r !== path.resolve(__dirname, './vueTemplate/src/assets/template/vueSSR.html')) {
 						// 当前这两种情况上述已经做了处理，只有template这里比较特殊
 						fs.copyFileSync(r, pinThing)
 					}
@@ -137,16 +137,16 @@ function commonPinThing (templateName, fReadName) {
 			
 			// 替换模板
 			if (scriptsReg.test(line)) {
-				if (/vuessr/ig.test(frame)) {
+				if (frame === 'vuessr') {
 					temp = line.replace(scriptsReg, '{"start": "webpack --config ./build/webpack.dev.config.js && webpack-dev-server --config ./build/webpack.dev.config.js --open", "webpack:sc": "webpack --config ./build/webpack.client.config.js", "webpack:ss": "webpack --config ./build/webpack.server.config.js", "webpack:ssr": "webpack --config ./build/webpack.client.config.js && webpack --config ./build/webpack.server.config.js"}')
-				} else if (/vue/ig.test(frame)) {
+				} else if (frame === 'vue') {
 					temp = line.replace(scriptsReg, '{"start": "webpack --config ./build/webpack.dev.config.js && webpack-dev-server --config ./build/webpack.dev.config.js --open", "webpack:dev": "webpack --config ./build/webpack.dev.config.js", "webpack:prod": "webpack --config ./build/webpack.prod.config.js"}')
 				}
 				fWrite.write(temp + os.EOL); // 下一行
 			} else if (devDepReg.test(line)) {
-				if (/vuessr/ig.test(frame)) {
+				if (frame === 'vuessr') {
 					temp = line.replace(devDepReg, '{"vue": "^2.5.17",	"vue-loader": "^15.3.0", "vue-template-compiler": "^2.5.17", "vue-router": "^3.0.1", "vuex": "^3.0.1", "vue-server-renderer": "^2.5.17", "vuex-router-sync": "^5.0.0"}')
-				} else if (/vue/ig.test(frame)) {
+				} else if (frame === 'vue') {
 					temp = line.replace(devDepReg, '{"vue": "^2.5.17",	"vue-loader": "^15.3.0", "vue-template-compiler": "^2.5.17", "vue-router": "^3.0.1", "vuex": "^3.0.1"}')
 				} else if (/react/ig.test(frame)) {
 					temp = line.replace(devDepReg, '"prop-types": "^15.6.2", "react": "^16.4.2", "react-dom": "^16.4.2",')
@@ -158,7 +158,8 @@ function commonPinThing (templateName, fReadName) {
 		});
 	
 		objReadline.on('close', ()=>{
-			console.log(`${userInputDir}项目已生成`)
+			console.log(`项目已生成，目录路径为：${userInputDir}`)
+			process.exit()
 		})
 	}
 }
@@ -189,7 +190,7 @@ function injectConfig (fReadName, fWriteName, target) {
 			let rulesDefault = ''
 			let templateDefault = ''
 
-			if (/vue/ig.test(frame)) {
+			if (frame === 'vue') {
 				rulesDefault = "[{test: /\.(js)$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/, exclude: /node_modules/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpe?g|gif)$/, exclude: /node_modules/, use: [{loader: 'file-loader'}, {loader: 'image-webpack-loader', options: { mozjpeg: {progressive: true,quality: 100},optipng: {enabled: false,},pngquant: {quality: '65-90',speed: 4},gifsicle: {interlaced: false,},webp: {quality: 75}}}]}, {test: /\.(woff|woff2|eot|ttf|otf)$/, exclude: /node_modules/, use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
 				// about postcss => Damn u, postcss2rem！This plugin is not suitable for me to handle postcss, and it cost me too many time to search on Internet just for a stupid thought which is to handle px to rem.
 				templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']})"
@@ -419,6 +420,3 @@ async function mkfile (userInputDir) {
 		}
 	}
 }
-
-// execute
-mkfile(userInputDir)

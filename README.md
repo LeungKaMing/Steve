@@ -33,6 +33,7 @@
 ~~4. 进入src/~~
 ~~5. nodemon app.js --webpack:dev // 启动类似webpack-dev-server功能的服务，访问localhost:8080，即可把dist/目录下的静态资源全部加载，除html文件，其余资源热更新~~
 > 上述划掉的是之前写demo调试的流程，重构后已作废，后续补上
+
 1.1. npm start - 快速生成目录 (默认vue)
 1.2. 如果想根据输入创建目录，暂时用这种方法：
 ```
