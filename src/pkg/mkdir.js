@@ -79,37 +79,39 @@ function commonPinThing (templateName, fReadName) {
 		let result = findAll(templateName)
 		result.map(async (r) => {
 			// r 是模版中的文件路径
-			let pinThing = fReadName.split('src')[0] + r.split('vueTemplate/')[1]	// 结合用户传入创建的目录路径
+			let pinThing = fReadName.split('src')[0] + r.split('vueTemplate/')[1].split(`${frame}/`)[0] + r.split('vueTemplate/')[1].split(`${frame}/`)[1] 	// 结合用户传入创建的目录路径
 			if (!fs.existsSync(pinThing)) {
 				if (path.extname(pinThing)) {
-					// 有后缀的证明是文件；补充检查该文件所在目录，不存在则创建，存在则忽略
-					await checkBaseDir(path.dirname(pinThing), path.dirname(pinThing))
-					// todo: 1116
-					// 把模版中的某个文件写入去初始化项目的路径下
-					// 【***特殊情况】选择template目录下带ssr字样的才写入去初始化项目的路径下
-					if (r === path.resolve(__dirname, './vueTemplate/src/assets/template/vueSSR.html') && frame === 'vuessr') {
-						let temp = path.resolve(userInputDir, 'src/assets/template/vueSSR.html')
-						if (fs.existsSync(temp)) {
-							fs.copyFileSync(r, temp)
+					if (frame === 'vue') {
+						if (/\/entry\/vuessr\//ig.test(r)) {
+							return
+						} else if (/\/store\/vuessr\//ig.test(r)) {
+							return
+						} else if (/\/pages\/vuessr\//ig.test(r)) {
+							return
+						} else if (/\/components\/vuessr\//ig.test(r)) {
+							return
+						} else if (/\/assets\/vuessr\//ig.test(r)) {
+							return
 						} else {
-							fs.createWriteStream(temp)
-							fs.copyFileSync(r, temp)
+							await checkBaseDir(path.dirname(pinThing), path.dirname(pinThing))
+							fs.copyFileSync(r, pinThing)
 						}
-					} else if (r === path.resolve(__dirname, './vueTemplate/src/assets/template/vue.html') && frame === 'vue') {
-						let temp = path.resolve(userInputDir, 'src/assets/template/vue.html')
-						if (fs.existsSync(temp)) {
-							fs.copyFileSync(r, temp)
+					} else if (frame === 'vuessr') {
+						if (/\/entry\/vue\//ig.test(r)) {
+							return
+						} else if (/\/store\/vue\//ig.test(r)) {
+							return
+						} else if (/\/pages\/vue\//ig.test(r)) {
+							return
+						} else if (/\/components\/vue\//ig.test(r)) {
+							return
+						} else if (/\/assets\/vue\//ig.test(r)) {
+							return
 						} else {
-							fs.createWriteStream(temp)
-							fs.copyFileSync(r, temp)
+							await checkBaseDir(path.dirname(pinThing), path.dirname(pinThing))
+							fs.copyFileSync(r, pinThing)
 						}
-					} else if (/\/entry\/vueEntry\.js/ig.test(r) && frame === 'vuessr') {
-						return
-					} else if (/\/entry\/vueSSR/ig.test(r) && frame === 'vue') {
-						return
-					} else if (r !== path.resolve(__dirname, './vueTemplate/src/assets/template/vue.html') && r !== path.resolve(__dirname, './vueTemplate/src/assets/template/vueSSR.html')) {
-						// 当前这两种情况上述已经做了处理，只有template这里比较特殊
-						fs.copyFileSync(r, pinThing)
 					}
 				}
 			}
@@ -168,99 +170,91 @@ function injectConfig (fReadName, fWriteName, target) {
 	if (target === 'webpack') {
 		let fRead = fs.createReadStream(fReadName);
 		let fWrite = fs.createWriteStream(fWriteName);
-		
 		let objReadline = readline.createInterface({
 				input: fRead,
 				terminal: true
 		});
 	
 		objReadline.on('line', (line)=>{
-			let temp = ''   // 由于逐行读取不能覆盖原有值，所以用容器装起来
-			const entryReg = /{{entryParams}}/
-			const vueClientEntryReg = /{{clientEntryParams}}/
-			const vueServerEntryReg = /{{serverEntryParams}}/
-			const outputReg = /{{outputParams}}/
-			const ruleReg = /{{ruleParams}}/
-			const templateListReg = /{{templateListParams}}/
-			const authorReg = /{{author}}/
-			const aliasReg = /{{aliasParams}}/
-			const extensionsReg = /{{extensionsParams}}/
+			// let temp = ''   // 由于逐行读取不能覆盖原有值，所以用容器装起来
+			// const entryReg = /{{entryParams}}/
+			// const vueClientEntryReg = /{{clientEntryParams}}/
+			// const vueServerEntryReg = /{{serverEntryParams}}/
+			// const outputReg = /{{outputParams}}/
+			// const ruleReg = /{{ruleParams}}/
+			// const templateListReg = /{{templateListParams}}/
+			// const authorReg = /{{author}}/
+			// const aliasReg = /{{aliasParams}}/
+			// const extensionsReg = /{{extensionsParams}}/
 
-			// 默认配置规则
-			let rulesDefault = ''
-			let templateDefault = ''
+			// // 默认配置规则
+			// let rulesDefault = ''
+			// let templateDefault = ''
 
-			if (frame === 'vue') {
-				rulesDefault = "[{test: /\.(js)$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/, exclude: /node_modules/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpe?g|gif)$/, exclude: /node_modules/, use: [{loader: 'file-loader'}, {loader: 'image-webpack-loader', options: { mozjpeg: {progressive: true,quality: 100},optipng: {enabled: false,},pngquant: {quality: '65-90',speed: 4},gifsicle: {interlaced: false,},webp: {quality: 75}}}]}, {test: /\.(woff|woff2|eot|ttf|otf)$/, exclude: /node_modules/, use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
-				// about postcss => Damn u, postcss2rem！This plugin is not suitable for me to handle postcss, and it cost me too many time to search on Internet just for a stupid thought which is to handle px to rem.
-				templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']})"
-				// 替换模板
-				if (entryReg.test(line)) {
-					// 入口
-					temp = line.replace(entryReg, "{vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js')}")
-				} else if (vueClientEntryReg.test(line)) {
-					// 出口
-					temp = line.replace(vueClientEntryReg, "{ssrClientEntry: path.resolve(__dirname, '../src/entry/entry-client.js')}")
-				}  else if (vueServerEntryReg.test(line)) {
-					// 出口
-					temp = line.replace(vueServerEntryReg, "{ssrServerEntry: path.resolve(__dirname, '../src/entry/entry-server.js')}")
-				}  else if (outputReg.test(line)) {
-					// 出口
-					temp = line.replace(outputReg, "{filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'}")
-				} else if (ruleReg.test(line)) {
-					// 规则
-					temp = line.replace(ruleReg, rulesDefault)
-				} else if (templateListReg.test(line)) {
-					temp = line.replace(templateListReg, templateDefault)
-				} else if (authorReg.test(line)) {
-					// 模板插件配置
-					temp = line.replace(authorReg,  String(new Date().toLocaleString()) + ', written by Leung which use Vue.')
-				} else if (aliasReg.test(line)) {
-					// todo $用replace会被转义，所以用字符串直接替换掉
-					temp = "alias: {'vue$':'vue/dist/vue.js'},"
-				} else if (extensionsReg.test(line)) {
-					temp = line.replace(extensionsReg, "['.vue']")
-				} else {
-					temp = line
-				}
-			} else if (/react/ig.test(frame)) {
-				rulesDefault = "[{test: /\.(js|jsx)$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/, exclude: /node_modules/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpe?g|gif)$/, exclude: /node_modules/, use: [{loader: 'file-loader'}, {loader: 'image-webpack-loader', options: { mozjpeg: {progressive: true,quality: 100},optipng: {enabled: false,},pngquant: {quality: '65-90',speed: 4},gifsicle: {interlaced: false,},webp: {quality: 75}}}]}, {test: /\.(woff|woff2|eot|ttf|otf)$/, exclude: /node_modules/, use: ['file-loader']}, ]"
-				// about postcss => Damn u, postcss2rem！This plugin is not suitable for me to handle postcss, and it cost me too many time to search on Internet just for a stupid thought which is to handle px to rem.
-				templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/react.html'),filename: path.resolve(__dirname, '../dist/react.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'reactEntry']})"
-				// 替换模板
-				if (entryReg.test(line)) {
-					// 入口
-					temp = line.replace(entryReg, "{reactEntry: path.resolve(__dirname, '../src/entry/reactEntry.js')}")
-				} else if (outputReg.test(line)) {
-					// 出口
-					temp = line.replace(outputReg, "{filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'}")
-				} else if (ruleReg.test(line)) {
-					// 规则
-					temp = line.replace(ruleReg, rulesDefault)
-				} else if (templateListReg.test(line)) {
-					temp = line.replace(templateListReg, templateDefault)
-				} else if (authorReg.test(line)) {
-					// 模板插件配置
-					temp = line.replace(authorReg,  String(new Date().toLocaleString()) + ', written by Leung which use React.')
-				} else if (aliasReg.test(line)) {
-					temp = line.replace(aliasReg, "{}")
-				} else if (extensionsReg.test(line)) {
-					temp = line.replace(extensionsReg, "['.js', '.jsx']")
-				} else {
-					temp = line
-				}
-			}
-			
-			fWrite.write(temp + os.EOL); // 下一行
+			// if (frame === 'vue') {
+			// 	rulesDefault = "[{test: /\.(js)$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/, exclude: /node_modules/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpe?g|gif)$/, exclude: /node_modules/, use: [{loader: 'file-loader'}, {loader: 'image-webpack-loader', options: { mozjpeg: {progressive: true,quality: 100},optipng: {enabled: false,},pngquant: {quality: '65-90',speed: 4},gifsicle: {interlaced: false,},webp: {quality: 75}}}]}, {test: /\.(woff|woff2|eot|ttf|otf)$/, exclude: /node_modules/, use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
+			// 	// about postcss => Damn u, postcss2rem！This plugin is not suitable for me to handle postcss, and it cost me too many time to search on Internet just for a stupid thought which is to handle px to rem.
+			// 	templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']})"
+			// 	// 替换模板
+			// 	if (entryReg.test(line)) {
+			// 		// 入口
+			// 		temp = line.replace(entryReg, "{vueEntry: path.resolve(__dirname, '../src/entry/vueEntry.js')}")
+			// 	} else if (vueClientEntryReg.test(line)) {
+			// 		// 出口
+			// 		temp = line.replace(vueClientEntryReg, "{ssrClientEntry: path.resolve(__dirname, '../src/entry/entry-client.js')}")
+			// 	}  else if (vueServerEntryReg.test(line)) {
+			// 		// 出口
+			// 		temp = line.replace(vueServerEntryReg, "{ssrServerEntry: path.resolve(__dirname, '../src/entry/entry-server.js')}")
+			// 	}  else if (outputReg.test(line)) {
+			// 		// 出口
+			// 		temp = line.replace(outputReg, "{filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'}")
+			// 	} else if (ruleReg.test(line)) {
+			// 		// 规则
+			// 		temp = line.replace(ruleReg, rulesDefault)
+			// 	} else if (templateListReg.test(line)) {
+			// 		temp = line.replace(templateListReg, templateDefault)
+			// 	} else if (authorReg.test(line)) {
+			// 		// 模板插件配置
+			// 		temp = line.replace(authorReg,  String(new Date().toLocaleString()) + ', written by Leung which use Vue.')
+			// 	} else if (aliasReg.test(line)) {
+			// 		// todo $用replace会被转义，所以用字符串直接替换掉
+			// 		temp = "alias: {'vue$':'vue/dist/vue.js'},"
+			// 	} else if (extensionsReg.test(line)) {
+			// 		temp = line.replace(extensionsReg, "['.vue']")
+			// 	} else {
+			// 		temp = line
+			// 	}
+			// } else if (/react/ig.test(frame)) {
+			// 	rulesDefault = "[{test: /\.(js|jsx)$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/, exclude: /node_modules/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpe?g|gif)$/, exclude: /node_modules/, use: [{loader: 'file-loader'}, {loader: 'image-webpack-loader', options: { mozjpeg: {progressive: true,quality: 100},optipng: {enabled: false,},pngquant: {quality: '65-90',speed: 4},gifsicle: {interlaced: false,},webp: {quality: 75}}}]}, {test: /\.(woff|woff2|eot|ttf|otf)$/, exclude: /node_modules/, use: ['file-loader']}, ]"
+			// 	// about postcss => Damn u, postcss2rem！This plugin is not suitable for me to handle postcss, and it cost me too many time to search on Internet just for a stupid thought which is to handle px to rem.
+			// 	templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/react.html'),filename: path.resolve(__dirname, '../dist/react.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'reactEntry']})"
+			// 	// 替换模板
+			// 	if (entryReg.test(line)) {
+			// 		// 入口
+			// 		temp = line.replace(entryReg, "{reactEntry: path.resolve(__dirname, '../src/entry/reactEntry.js')}")
+			// 	} else if (outputReg.test(line)) {
+			// 		// 出口
+			// 		temp = line.replace(outputReg, "{filename: '[name].[hash].js',path: path.resolve(__dirname, '../dist/assets/'),publicPath: '/assets/',chunkFilename: '[name].[hash].js'}")
+			// 	} else if (ruleReg.test(line)) {
+			// 		// 规则
+			// 		temp = line.replace(ruleReg, rulesDefault)
+			// 	} else if (templateListReg.test(line)) {
+			// 		temp = line.replace(templateListReg, templateDefault)
+			// 	} else if (authorReg.test(line)) {
+			// 		// 模板插件配置
+			// 		temp = line.replace(authorReg,  String(new Date().toLocaleString()) + ', written by Leung which use React.')
+			// 	} else if (aliasReg.test(line)) {
+			// 		temp = line.replace(aliasReg, "{}")
+			// 	} else if (extensionsReg.test(line)) {
+			// 		temp = line.replace(extensionsReg, "['.js', '.jsx']")
+			// 	} else {
+			// 		temp = line
+			// 	}
+			// }
+			fWrite.write(line + os.EOL); // 下一行
 		});
 	
 		objReadline.on('close', ()=>{
-			// // 判断是否生成了模板 => 是则把build/webpack.base.config.js替换掉
-			// if (fs.existsSync(fWriteName)) {
-			// 	// todo: 1114
-			// 	// demo: 测试覆盖，实际项目肯定是不能覆盖给定的文件的
-			// 	fs.copyFileSync(fWriteName, path.resolve(__dirname, '../../build/webpack.base.config.js'));
-			// }
 		})
 	} else if (target === 'src/assets') {
 		if (/\/src\/assets\/(\w+)/ig.test(fReadName)) {
@@ -391,13 +385,13 @@ async function mkfile (userInputDir) {
 						if (/\/build/ig.test(itemDir)) {
 							// 检查遍历项是否为build/目录，命中则调用注入函数
 							// 还要检查是否为ssr项目
-							injectConfig(webpackBaseTemplate, path.resolve(__dirname, `${itemDir}/webpack.base.config.js`), 'webpack')
+							injectConfig(webpackBaseTemplate, path.resolve(__dirname, `${itemDir}/webpack.base.config.txt`), 'webpack')
 							if (/ssr/ig.test(frame)) {
-								injectConfig(webpackClientTemplate, path.resolve(__dirname, `${itemDir}/webpack.client.config.js`), 'webpack')
-								injectConfig(webpackServerTemplate, path.resolve(__dirname, `${itemDir}/webpack.server.config.js`), 'webpack')
+								injectConfig(webpackClientTemplate, path.resolve(__dirname, `${itemDir}/webpack.client.config.txt`), 'webpack')
+								injectConfig(webpackServerTemplate, path.resolve(__dirname, `${itemDir}/webpack.server.config.txt`), 'webpack')
 							} else {
-								injectConfig(webpackDevTemplate, path.resolve(__dirname, `${itemDir}/webpack.dev.config.js`), 'webpack')
-								injectConfig(webpackProdTemplate, path.resolve(__dirname, `${itemDir}/webpack.prod.config.js`), 'webpack')
+								injectConfig(webpackDevTemplate, path.resolve(__dirname, `${itemDir}/webpack.dev.config.txt`), 'webpack')
+								injectConfig(webpackProdTemplate, path.resolve(__dirname, `${itemDir}/webpack.prod.config.txt`), 'webpack')
 							}
 						} else if (/\/src\/assets(\/\w+)*/ig.test(itemDir)) {
 							// 过滤出 src/assets 目录，单独处理

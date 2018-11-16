@@ -1,9 +1,9 @@
 import Vue from 'vue'
-import App from '../pages/App.vue'
-import {createRouter} from '../entry/createRouter'
-import {createStore} from '../entry/createStore'
+import App from '../pages/vueSSR/App.vue'
+import {createRouter} from '../entry/vueSSR-createRouter'
+import {createStore} from '../entry/vueSSR-createStore'
 import { sync } from 'vuex-router-sync'
-import * as ut from '../components/vueSSR/assets/scripts/utils'
+import * as ut from '../assets/scripts/utils'
 
 Vue.use(ut)
 
