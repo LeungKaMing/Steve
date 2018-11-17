@@ -122,7 +122,6 @@ function commonPinThing (templateName, fReadName) {
 		fs.copyFileSync(postcssTemplate, fReadName + postcssTemplate.split('/pkg/vueTemplate')[1])
 		fs.copyFileSync(readMeTemplate, fReadName + readMeTemplate.split('/pkg/vueTemplate')[1])
 
-		// demo package.json
 		let fRead = fs.createReadStream(packageTemplate);
 		// 小处理：由于【需要额外处理的模版文件】都是txt后缀，所以指定package.txt需要转换json
 		let resultPath = fReadName + (packageTemplate.split('/pkg/vueTemplate')[1].replace(/\.txt/ig, '.json'))
@@ -169,17 +168,18 @@ function commonPinThing (templateName, fReadName) {
 function injectConfig (fReadName, fWriteName, target) {
 	if (target === 'webpack') {
 		let fRead = fs.createReadStream(fReadName);
-		let fWrite = fs.createWriteStream(fWriteName);
+		// 1.1 let fWrite = fs.createWriteStream(fWriteName); // 往一个不存在的文件里写数据是会有问题的，加上逐行写入的条件【弃置代码】
+		// 1.2 由于设计问题，跟webpack相关的，fReadName都会等于对应在pkg的模板webpackBaseTemplate 【1.3见下方】
+		// 2 由于需要正则匹配替换的模板都为txt后缀，用户创建的目录下肯定没有该文件，这就产生了逐行读写的问题：应该逐行一边读一边追加在文件里（哪怕这个文件不存在，则会自动创建）；而不是逐行一边读一边写在一个不存在的文件里，这样做会发现只能写入第一行【经过查找api，发现第一种能实现】
 		let objReadline = readline.createInterface({
 				input: fRead,
 				terminal: true
 		});
-	
 		objReadline.on('line', (line)=>{
 			let temp = ''   // 由于逐行读取不能覆盖原有值，所以用容器装起来
 			const entryReg = /{{entryParams}}/
 			const vueClientEntryReg = /{{clientEntryParams}}/
-			const vueServerEntryReg = /{{serverEntryParams}}/
+			const vueServerEntryReg = /{{sernjeverEntryParams}}/
 			const outputReg = /{{outputParams}}/
 			const ruleReg = /{{ruleParams}}/
 			const templateListReg = /{{templateListParams}}/
@@ -191,7 +191,7 @@ function injectConfig (fReadName, fWriteName, target) {
 			let rulesDefault = ''
 			let templateDefault = ''
 
-			if (frame === 'vue') {
+			if (/vue/ig.test(frame)) {
 				rulesDefault = "[{test: /\.(js)$/, exclude: /node_modules/, loader: 'babel-loader'}, {test: /\.css$/, exclude: /node_modules/,use: ExtractTextPlugin.extract({fallback: 'style-loader',use: [{loader: 'css-loader'}, {loader: 'postcss-loader'}]})}, {test: /\.(png|svg|jpe?g|gif)$/, exclude: /node_modules/, use: [{loader: 'file-loader'}, {loader: 'image-webpack-loader', options: { mozjpeg: {progressive: true,quality: 100},optipng: {enabled: false,},pngquant: {quality: '65-90',speed: 4},gifsicle: {interlaced: false,},webp: {quality: 75}}}]}, {test: /\.(woff|woff2|eot|ttf|otf)$/, exclude: /node_modules/, use: ['file-loader']}, {test: /\.vue$/,loader: 'vue-loader'}]"
 				// about postcss => Damn u, postcss2rem！This plugin is not suitable for me to handle postcss, and it cost me too many time to search on Internet just for a stupid thought which is to handle px to rem.
 				templateDefault = "new HtmlWebpackPlugin({title: process.env.NODE_ENV === 'production' ? 'webpack(prod)' : 'webpack(dev)',template: path.resolve(__dirname, '../src/template/vue.html'),filename: path.resolve(__dirname, '../dist/vue.html'), minify: true,showErrors: true, chunks: ['common', 'vendors', 'vueEntry']})"
@@ -251,7 +251,9 @@ function injectConfig (fReadName, fWriteName, target) {
 					temp = line
 				}
 			}
-			fWrite.write(temp + os.EOL); // 下一行
+			// 1.3 fWrite.write(temp + os.EOL); // 往一个不存在的文件里写数据是会有问题的，加上逐行写入的条件【弃置代码
+			// 同步地追加数据到文件，如果文件不存在则创建文件。 data 可以是字符串或 Buffer。
+			fs.appendFileSync(fWriteName, temp + os.EOL)
 		});
 	
 		objReadline.on('close', ()=>{
