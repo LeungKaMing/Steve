@@ -179,7 +179,7 @@ function injectConfig (fReadName, fWriteName, target) {
 			let temp = ''   // 由于逐行读取不能覆盖原有值，所以用容器装起来
 			const entryReg = /{{entryParams}}/
 			const vueClientEntryReg = /{{clientEntryParams}}/
-			const vueServerEntryReg = /{{sernjeverEntryParams}}/
+			const vueServerEntryReg = /{{serverEntryParams}}/
 			const outputReg = /{{outputParams}}/
 			const ruleReg = /{{ruleParams}}/
 			const templateListReg = /{{templateListParams}}/
